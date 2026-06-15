@@ -496,3 +496,5 @@ let GENRES = {
   "eFootball 2024": "Deportes",
   "eFootball Pes 26": "Deportes",
 };
+window.GDB_DEFAULT = GDB;
+window.GENRES = GENRES;
