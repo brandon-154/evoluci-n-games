@@ -153,6 +153,7 @@ function switchCoverTab(tab){
     if(q) buscarPortadaAuto();
   }
 }
+window.switchCoverTab = switchCoverTab;
 async function buscarPortadaAuto(){
   const name=document.getElementById('ag-n').value.trim();
   if(!name){toast('Escribe el nombre del juego primero','e');return;}
@@ -549,6 +550,7 @@ function openAddGame(){
   resetCoverTabs();
   oMod('m-ag');setTimeout(()=>document.getElementById('ag-n').focus(),100);
 }
+window.openAddGame = openAddGame;
 function editGame(con,disk,name){
   editGameData={con,disk,name};
   document.getElementById('ag-tit').textContent='Editar Juego';
@@ -588,6 +590,7 @@ function saveGame(){
   toast(newName+(editGameData?' actualizado':' agregado')+' ✅','s');
   editGameData=null;
 }
+window.saveGame = saveGame;
 function delGame(con,disk,name){
   if(!confirm('¿Eliminar "'+name+'" de '+disk+'?'))return;
   GDB[con][disk]=GDB[con][disk].filter(g=>g!==name);
@@ -1169,6 +1172,7 @@ function openWorklist(){
   oMod('m-worklist');
   setTimeout(()=>document.getElementById('wl-input')?.focus(),100);
 }
+window.openWorklist = openWorklist;
 function addWorklistItem(){
   const inp=document.getElementById('wl-input');
   const raw=inp.value.trim();
