@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Catálogo de Juegos — Evolución Games B&R</title>
+<title>Catálogo de Juegos — Evolution Games B&R</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link rel="stylesheet" href="../css/style.css"/>
@@ -13,7 +13,7 @@
 <div class="gbg"></div>
 
 <nav>
-  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolution Games B&amp;R</span></div>
   <div class="nr">
     <span class="badm"><i class="fas fa-crown"></i> Admin</span>
     <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
@@ -110,10 +110,30 @@
       </select>
     </div>
     <div class="fi"><label>Imagen de portada</label>
-      <div class="img-upload-field">
-        <input type="file" id="ag-img-file" accept="image/*" onchange="previewImg(this,'ag-img-prev','ag-img-b64')"/>
-        <img id="ag-img-prev" class="img-preview"/>
-        <div class="img-upload-txt"><i class="fas fa-cloud-upload-alt"></i>Toca para subir imagen desde tu dispositivo<br/><span style="color:var(--mu);font-size:.65rem">JPG, PNG</span></div>
+      <!-- Pestañas -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="tab-manual" class="ctb on" onclick="switchCoverTab('manual')" style="flex:1;font-size:.75rem"><i class="fas fa-upload"></i> Subir yo mismo</button>
+        <button id="tab-auto"   class="ctb"    onclick="switchCoverTab('auto')"   style="flex:1;font-size:.75rem"><i class="fas fa-magic"></i> Buscar automático</button>
+      </div>
+      <!-- Manual -->
+      <div id="cover-manual">
+        <div class="img-upload-field">
+          <input type="file" id="ag-img-file" accept="image/*" onchange="previewImg(this,'ag-img-prev','ag-img-b64')"/>
+          <img id="ag-img-prev" class="img-preview"/>
+          <div class="img-upload-txt"><i class="fas fa-cloud-upload-alt"></i>Toca para subir imagen desde tu dispositivo<br/><span style="color:var(--mu);font-size:.65rem">JPG, PNG</span></div>
+        </div>
+      </div>
+      <!-- Auto -->
+      <div id="cover-auto" style="display:none">
+        <button class="bp cy" style="width:100%;margin-bottom:10px;padding:10px;font-size:.8rem" onclick="buscarPortadaAuto()"><i class="fas fa-search"></i> Buscar portada</button>
+        <div id="cover-results" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:220px;overflow-y:auto"></div>
+        <div id="cover-status" style="font-size:.73rem;color:var(--mu);text-align:center;margin-top:6px"></div>
+      </div>
+      <!-- Preview compartido -->
+      <div id="cover-selected-wrap" style="display:none;margin-top:10px;text-align:center">
+        <img id="cover-selected-img" style="max-height:140px;border-radius:8px;border:2px solid var(--cy)"/>
+        <div style="font-size:.7rem;color:var(--cy);margin-top:4px"><i class="fas fa-check-circle"></i> Portada seleccionada</div>
+        <button onclick="clearCoverSelected()" style="background:none;border:none;color:var(--mu);font-size:.7rem;margin-top:2px;cursor:pointer"><i class="fas fa-times"></i> Quitar</button>
       </div>
       <input type="hidden" id="ag-img-b64"/>
     </div>
@@ -151,7 +171,7 @@
   </div>
 </div>
 
-<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+<footer><span>Evolution Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
 
 <!-- FABs -->
 <div class="fab-stack">
@@ -160,7 +180,7 @@
 </div>
 
 <script src="../data/games.js"></script>
-<script src="../js/app.js"></script>
+<script type="module" src="../js/app.js"></script>
 <script>
 iCat();
 updateWorklistBadge();

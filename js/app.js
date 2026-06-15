@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════
 //  EVOLUCIÓN GAMES B&R — Lógica principal
 // ═══════════════════════════════════════════════
+import { cargarGDB, guardarGDB, escucharGDB } from './firebase.js';
 
 /* ── HASH ── */
 function sh(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(16)}
@@ -89,6 +90,8 @@ function save(){
   localStorage.setItem('eg_admins',  JSON.stringify(ADMINS));
   localStorage.setItem('eg_guides',  JSON.stringify(GUIDES));
   localStorage.setItem('eg_genres',  JSON.stringify(GENRES));
+  // ── Firebase: sube catálogo a la nube para que todos lo vean ──
+  guardarGDB();
 }
 
 /* ══════════════════════════════
@@ -119,9 +122,87 @@ function goTo(p){
 ══════════════════════════════ */
 function oMod(id){document.getElementById(id)?.classList.add('op');}
 function cMod(id){document.getElementById(id)?.classList.remove('op');}
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('op');}));
+  // ── Carga catálogo desde Firebase ──
+  await cargarGDB();
+  // Escucha cambios en tiempo real → todos ven lo mismo al instante
+  escucharGDB(()=>{
+    if(document.getElementById('ctabs'))   iCat();
+    if(document.getElementById('client-console-grid')) renderClientConsoles();
+    if(document.getElementById('client-ggrid'))        renderClientGames();
+  });
 });
+
+/* ══════════════════════════════
+   PORTADAS AUTOMÁTICAS
+   Pestaña "Buscar automático" en el modal de agregar/editar juego.
+   Usa RAWG.io (API pública). Si no encuentra o la imagen
+   no es correcta el admin elige otra o sube la suya.
+══════════════════════════════ */
+function switchCoverTab(tab){
+  const isManual=tab==='manual';
+  document.getElementById('cover-manual').style.display=isManual?'block':'none';
+  document.getElementById('cover-auto').style.display=isManual?'none':'block';
+  document.getElementById('tab-manual').classList.toggle('on',isManual);
+  document.getElementById('tab-auto').classList.toggle('on',!isManual);
+  if(!isManual){
+    const q=document.getElementById('ag-n').value.trim();
+    if(q) buscarPortadaAuto();
+  }
+}
+async function buscarPortadaAuto(){
+  const name=document.getElementById('ag-n').value.trim();
+  if(!name){toast('Escribe el nombre del juego primero','e');return;}
+  const status=document.getElementById('cover-status');
+  const results=document.getElementById('cover-results');
+  status.textContent='🔍 Buscando portada...';
+  results.innerHTML='';
+  try{
+    const res=await fetch(`https://api.rawg.io/api/games?search=${encodeURIComponent(name)}&page_size=6&key=`);
+    const data=await res.json();
+    const games=(data.results||[]).filter(g=>g.background_image);
+    if(!games.length){
+      status.innerHTML='❌ No se encontró portada automática.<br/><span style="font-size:.68rem">Puedes subir la imagen manualmente desde la otra pestaña.</span>';
+      return;
+    }
+    status.textContent=`✅ ${games.length} resultado(s) — toca la portada correcta:`;
+    results.innerHTML=games.map(g=>`
+      <div class="cover-opt" onclick="selectCover('${g.background_image.replace(/'/g,"\\'")}','${(g.name||'').replace(/'/g,"\\'")}')"
+           style="cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid transparent;transition:.2s" title="${g.name||''}">
+        <img src="${g.background_image}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'"/>
+        <div style="font-size:.58rem;padding:3px 4px;background:#111;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name||''}</div>
+      </div>`).join('');
+  }catch(e){
+    status.innerHTML='⚠️ Error de conexión. Usa la pestaña manual.';
+  }
+}
+async function selectCover(url){
+  document.getElementById('cover-status').textContent='⬇️ Descargando imagen...';
+  try{
+    const res=await fetch(url);
+    const blob=await res.blob();
+    const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(blob);});
+    document.getElementById('ag-img-b64').value=b64;
+    document.getElementById('cover-selected-img').src=b64;
+    document.getElementById('cover-selected-wrap').style.display='block';
+    document.getElementById('cover-status').innerHTML='✅ Portada lista — si no es la correcta, elige otra o usa la pestaña manual.';
+  }catch(e){
+    document.getElementById('cover-status').textContent='⚠️ No se pudo descargar. Elige otra o súbela manualmente.';
+  }
+}
+function clearCoverSelected(){
+  document.getElementById('ag-img-b64').value='';
+  document.getElementById('cover-selected-wrap').style.display='none';
+  document.getElementById('cover-selected-img').src='';
+  document.getElementById('cover-results').innerHTML='';
+  document.getElementById('cover-status').textContent='';
+}
+function resetCoverTabs(){
+  switchCoverTab('manual');
+  clearCoverSelected();
+  resetImgField('ag-img-file','ag-img-prev','ag-img-b64');
+}
 
 /* ══════════════════════════════
    IMAGE UPLOAD HELPERS
@@ -461,7 +542,7 @@ function openAddGame(){
   document.getElementById('ag-c').value=aCon;
   document.getElementById('ag-genre').value='';
   refreshDiskOptions(aCon, aDisk!=='Todos'?aDisk:null);
-  resetImgField('ag-img-file','ag-img-prev','ag-img-b64');
+  resetCoverTabs();
   oMod('m-ag');setTimeout(()=>document.getElementById('ag-n').focus(),100);
 }
 function editGame(con,disk,name){
@@ -472,8 +553,13 @@ function editGame(con,disk,name){
   document.getElementById('ag-c').value=con;
   document.getElementById('ag-genre').value=GENRES[name]||'';
   refreshDiskOptions(con, disk);
+  resetCoverTabs();
   const img=GIMGS[con+'::'+name]||'';
-  img?setImgField(img,'ag-img-file','ag-img-prev','ag-img-b64'):resetImgField('ag-img-file','ag-img-prev','ag-img-b64');
+  if(img){
+    document.getElementById('ag-img-b64').value=img;
+    document.getElementById('cover-selected-img').src=img;
+    document.getElementById('cover-selected-wrap').style.display='block';
+  }
   oMod('m-ag');
 }
 function saveGame(){
@@ -825,7 +911,7 @@ function printIngresos(){
   const label={all:'Todos los registros',week:'Última semana',month:'Este mes',year:'Este año'}[filterVal]||'';
   document.getElementById('print-area').innerHTML=`
     <div class="ing-print-page">
-      <div class="ing-print-title">📊 Reporte de Ingresos — Evolución Games B&R<br/>
+      <div class="ing-print-title">📊 Reporte de Ingresos — Evolution Games B&R<br/>
         <span style="font-size:10pt;font-weight:400;color:#555">${label} · Generado: ${new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'})}</span>
       </div>
       ${items.map(i=>`<div class="ing-print-row"><span>${fmtFecha(i.fecha)}</span><span>${i.trabajo}</span><span style="font-weight:700">+${Number(i.monto).toLocaleString('es')} Bs.</span></div>`).join('')}
@@ -1114,7 +1200,7 @@ function cleanWorklistLine(line){
   // Quita líneas de total: "Total: 6 juego(s)"
   if(/^total\s*:?\s*\d+/i.test(t)) return null;
   // Quita líneas de título/branding (contienen "Lista de juegos" o el nombre del negocio)
-  if(/lista de juegos|evoluci[oó]n games/i.test(t)) return null;
+  if(/lista de juegos|evolution games/i.test(t)) return null;
   // Quita numeración inicial: "1. ", "2) ", "3 - "
   t=t.replace(/^\d+\s*[\.\)\-]\s*/, '');
   // Quita viñetas: "- ", "• ", "* "
