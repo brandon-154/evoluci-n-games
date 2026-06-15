@@ -259,6 +259,7 @@ function doLogin(){
   applyAdminUI(found.display);
   toast('¡Bienvenido, '+found.display+'! 👑','s');
 }
+window.doLogin = doLogin;
 function applyAdminUI(displayName){
   document.body.classList.add('is-admin');
   const a=document.getElementById('btn-login-nav'); if(a) a.style.display='none';
