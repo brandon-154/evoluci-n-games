@@ -59,8 +59,9 @@
 <script src="../data/games.js"></script>
 <script type="module" src="../js/app.js"></script>
 <script>
-renderClientConsoles();
-updateCartBadge();
+window.addEventListener('load', () => {
+  if (window.nombreFuncion) window.nombreFuncion();
+});
 </script>
 </body>
 </html>
