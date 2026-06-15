@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Puesto — Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span class="badm"><i class="fas fa-crown"></i> Admin</span>
+    <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
+    <button class="nbtn dn" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+
+<div class="ip">
+  <div class="ihdr">
+    <div class="bc"><a href="../index.html" class="bcl" style="text-decoration:none"><i class="fas fa-home"></i> Inicio</a><i class="fas fa-chevron-right" style="font-size:.52rem"></i><span>Puesto</span></div>
+    <h1 class="itit"><i class="fas fa-tools"></i> Puesto de Juegos</h1>
+  </div>
+  <div class="mgrid">
+
+    <a href="catalogo.html" class="mb" data-c="cy">
+      <div class="mbic"><i class="fas fa-search"></i></div>
+      <p class="mblb">Buscar</p><h3 class="mbti">Catálogo y Búsqueda de Juegos</h3>
+      <p class="mbds">Busca por consola y nombre. Ve en qué disco duro está.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="articulos.html" class="mb" data-c="am">
+      <div class="mbic"><i class="fas fa-tags"></i></div>
+      <p class="mblb">Inventario</p><h3 class="mbti">Precios de Artículos</h3>
+      <p class="mbds">Cards con foto y precio actualizado.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="fisicos.html" class="mb" data-c="gr">
+      <div class="mbic"><i class="fas fa-compact-disc"></i></div>
+      <p class="mblb">Físicos</p><h3 class="mbti">Juegos PS4 Físicos</h3>
+      <p class="mbds">Catálogo de juegos en disco con precio.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="reparaciones.html" class="mb" data-c="rd">
+      <div class="mbic"><i class="fas fa-wrench"></i></div>
+      <p class="mblb">Servicios</p><h3 class="mbti">Reparaciones, Flasheos y Chipeos</h3>
+      <p class="mbds">Precios de todos los servicios técnicos.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="flasheo.html" class="mb" data-c="pk">
+      <div class="mbic"><i class="fas fa-book-open"></i></div>
+      <p class="mblb">Tutoriales</p><h3 class="mbti">Guías de Flasheo por Versión</h3>
+      <p class="mbds">Paso a paso por versión y consola.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="imprimir.html" class="mb" data-c="te">
+      <span class="mbad"><i class="fas fa-crown"></i> Admin</span>
+      <div class="mbic"><i class="fas fa-print"></i></div>
+      <p class="mblb">Catálogo</p><h3 class="mbti">Imprimir Catálogo PDF</h3>
+      <p class="mbds">Genera PDF con portadas. Elige qué juegos imprimir.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="cliente.html" class="mb" data-c="pu">
+      <div class="mbic"><i class="fas fa-qrcode"></i></div>
+      <p class="mblb">Clientes</p><h3 class="mbti">Catálogo para Clientes (QR)</h3>
+      <p class="mbds">Link/QR con carrito y envío a WhatsApp.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="ingresos.html" class="mb" data-c="em" id="mb-ing" style="display:none">
+      <span class="mbad"><i class="fas fa-crown"></i> Admin</span>
+      <div class="mbic"><i class="fas fa-coins"></i></div>
+      <p class="mblb">Finanzas</p><h3 class="mbti">Registro de Ingresos</h3>
+      <p class="mbds">Dashboard de ganancias con reportes por fecha.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+    <a href="adminusers.html" class="mb" data-c="or" id="mb-au" style="display:none">
+      <span class="mbad"><i class="fas fa-crown"></i> Admin</span>
+      <div class="mbic"><i class="fas fa-user-shield"></i></div>
+      <p class="mblb">Sistema</p><h3 class="mbti">Gestionar Administradores</h3>
+      <p class="mbds">Crea y elimina cuentas de admin.</p>
+      <i class="fas fa-arrow-up-right mbar"></i>
+    </a>
+
+  </div>
+  <div class="abar"><i class="fas fa-crown"></i><span class="abt">Modo Administrador</span><span> — edición activa en todo el sistema</span></div>
+</div>
+
+<!-- Login Modal -->
+<div class="ov" id="m-login">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-login')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-crown"></i></div>
+    <h2 class="mtit">Acceso Admin</h2><p class="msub">Ingresa tus credenciales.</p>
+    <div class="fi"><label>Usuario</label><input type="text" id="lu" placeholder="admin" autocomplete="off"/></div>
+    <div class="fi"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="bp cy" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <div class="merr" id="lerr"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+
+<!-- FABs -->
+<div class="fab-stack">
+  <a href="https://wa.me/59160110595" target="_blank" class="fab-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="../index.html" class="fab-btn home" title="Inicio"><i class="fas fa-home"></i></a>
+</div>
+
+<script src="../data/games.js"></script>
+<script src="../js/app.js"></script>
+<script>
+</script>
+</body>
+</html>

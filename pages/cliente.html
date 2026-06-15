@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Catálogo de Juegos — Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span style="font-size:.7rem;color:var(--mu)"><i class="fas fa-shopping-cart"></i> Catálogo de Clientes</span>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+
+<div style="position:relative;z-index:1">
+  <div class="client-hero">
+    <h1><span class="sl" style="display:inline-block"><span style="color:var(--cy);text-shadow:0 0 24px rgba(0,212,255,.5)">Evolución Games</span></span></h1>
+    <p>Elige tu consola y selecciona los juegos que quieres cargar. Cuando termines, envíanos tu lista directo por WhatsApp 🎮</p>
+  </div>
+  <div class="client-console-grid" id="client-console-grid"></div>
+</div>
+
+<!-- Cart FAB -->
+<button class="cart-fab" onclick="openCart()">
+  <i class="fas fa-shopping-cart"></i>
+  <span>Mi Lista</span>
+  <span class="cart-badge" id="cart-badge">0</span>
+</button>
+
+<!-- Cart Modal -->
+<div class="ov" id="m-cart">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-cart')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-shopping-cart"></i></div>
+    <h2 class="mtit">Mi Lista de Juegos</h2>
+    <p class="msub">Revisa tu selección antes de enviarla.</p>
+    <div class="cart-list" id="cart-list"></div>
+    <button class="bp cy" onclick="sendCartToWhatsApp('principal')"><i class="fab fa-whatsapp"></i> Enviar lista por WhatsApp</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="sbtn dl" style="flex:1;justify-content:center" onclick="clearCart()"><i class="fas fa-trash"></i> Vaciar lista</button>
+    </div>
+    <div class="wa-config-note">
+      <i class="fas fa-info-circle"></i>
+      <span>Tu lista se enviará por WhatsApp para que el administrador la revise y te confirme en qué disco está cada juego.</span>
+    </div>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Catálogo para Clientes &nbsp;·&nbsp; 2026</footer>
+
+<script src="../data/games.js"></script>
+<script src="../js/app.js"></script>
+<script>
+renderClientConsoles();
+updateCartBadge();
+</script>
+</body>
+</html>

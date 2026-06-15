@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span class="badm"><i class="fas fa-crown"></i> Admin</span>
+    <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
+    <button class="nbtn dn" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 40px;text-align:center;position:relative;z-index:1">
+  <p class="hey"><i class="fas fa-gamepad"></i> &nbsp;Sistema de Gestión</p>
+  <h1 class="htitle"><span class="sl">Evolución Games</span></h1>
+  <p class="hsub">Panel central para tu puesto de juegos y tienda. Catálogos, precios, reparaciones y más.</p>
+  <div class="mcards">
+    <a href="pages/puesto.html" class="scard pu">
+      <div class="sci"><i class="fas fa-tools"></i></div>
+      <p class="slbl">Sección</p><h2 class="stit">Puesto</h2>
+      <p class="sdsc">Carga de juegos, catálogos, reparaciones, flasheos y guías.</p>
+      <div class="sarr"><i class="fas fa-arrow-up-right"></i></div>
+    </a>
+    <div class="scard ti" onclick="toast('Tienda próximamente 🚀','s')">
+      <span class="cs-b">Próximamente</span>
+      <div class="sci"><i class="fas fa-store"></i></div>
+      <p class="slbl">Sección</p><h2 class="stit">Tienda</h2>
+      <p class="sdsc">Control de máquinas ciber, precios de dulces y snacks.</p>
+      <div class="sarr"><i class="fas fa-arrow-up-right"></i></div>
+    </div>
+  </div>
+  <div style="margin-top:32px;text-align:center">
+    <p style="font-size:.75rem;color:var(--mu);margin-bottom:9px">¿Eres el administrador?</p>
+    <button class="nbtn" onclick="oMod('m-login')" style="margin:auto"><i class="fas fa-crown"></i> Acceso Admin</button>
+  </div>
+  <div style="margin-top:14px">
+    <a href="pages/cliente.html" class="nbtn" style="display:inline-flex;border-color:rgba(0,212,255,.3);color:var(--cy)">
+      <i class="fas fa-qrcode"></i> Catálogo para Clientes
+    </a>
+  </div>
+</div>
+
+<div class="ov" id="m-login">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-login')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-crown"></i></div>
+    <h2 class="mtit">Acceso Admin</h2><p class="msub">Ingresa tus credenciales.</p>
+    <div class="fi"><label>Usuario</label><input type="text" id="lu" placeholder="admin" autocomplete="off"/></div>
+    <div class="fi"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="bp cy" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <div class="merr" id="lerr"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+
+<script src="data/games.js"></script>
+<script src="js/app.js"></script>
+<script>
+if(role==='admin'){
+  document.body.classList.add('is-admin');
+  document.getElementById('btn-login-nav').style.display='none';
+  document.getElementById('btn-logout').classList.add('on');
+}
+</script>
+</body>
+</html>

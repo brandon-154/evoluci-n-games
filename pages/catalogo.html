@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Catálogo de Juegos — Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span class="badm"><i class="fas fa-crown"></i> Admin</span>
+    <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
+    <button class="nbtn dn" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+<div id="print-area"></div>
+
+<div class="ip">
+  <div class="ihdr">
+    <div class="bc">
+      <a href="../index.html" class="bcl" style="text-decoration:none"><i class="fas fa-home"></i> Inicio</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <a href="puesto.html" class="bcl" style="text-decoration:none">Puesto</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <span>Catálogo</span>
+    </div>
+    <h1 class="itit"><i class="fas fa-search"></i> Catálogo de Juegos</h1>
+  </div>
+  <div class="ctabs" id="ctabs"></div>
+  <div class="ctabs" id="disktabs" style="border-top:1px solid var(--brd)"></div>
+  <div class="swrap">
+    <div class="srow">
+      <div class="sbox"><i class="fas fa-search"></i><input type="text" id="sinp" placeholder="Busca un juego..." oninput="rG()"/></div>
+      <span id="sc"></span>
+    </div>
+  </div>
+  <div class="ggrid" id="ggrid"></div>
+  <button class="fab" onclick="openAddGame()"><i class="fas fa-plus"></i> Agregar Juego</button>
+</div>
+
+<!-- Lista de Trabajo FAB -->
+<button class="worklist-fab" onclick="openWorklist()">
+  <i class="fas fa-clipboard-list"></i>
+  <span>Lista de Trabajo</span>
+  <span class="wl-badge" id="worklist-badge">0</span>
+</button>
+
+<!-- Lista de Trabajo Modal -->
+<div class="ov" id="m-worklist">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-worklist')"><i class="fas fa-times"></i></button>
+    <div class="mic" style="background:rgba(245,158,11,.1);color:#f59e0b"><i class="fas fa-clipboard-list"></i></div>
+    <h2 class="mtit">Lista de Trabajo</h2>
+    <p class="msub">Anota un juego, o <strong style="color:var(--tx)">pega directo</strong> el mensaje de WhatsApp con la lista completa — se separa sola. Marca ✓ cuando ya los instales.</p>
+    <div class="wl-add-row" style="align-items:flex-start">
+      <textarea id="wl-input" placeholder="Escribe un juego, o pega aquí el mensaje completo de WhatsApp con la lista..." style="flex:1;min-height:46px;max-height:140px" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();addWorklistItem();}"></textarea>
+      <button class="bp am" style="width:auto;padding:9px 16px;margin-top:0;align-self:flex-start" onclick="addWorklistItem()"><i class="fas fa-plus"></i></button>
+    </div>
+    <div class="wl-list" id="wl-list"></div>
+    <div class="wl-actions">
+      <button class="sbtn ed" onclick="clearWorklist(true)"><i class="fas fa-broom"></i> Quitar listos</button>
+      <button class="sbtn dl" onclick="clearWorklist(false)"><i class="fas fa-trash"></i> Borrar todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="ov" id="m-login">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-login')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-crown"></i></div>
+    <h2 class="mtit">Acceso Admin</h2><p class="msub">Ingresa tus credenciales.</p>
+    <div class="fi"><label>Usuario</label><input type="text" id="lu" placeholder="admin" autocomplete="off"/></div>
+    <div class="fi"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="bp cy" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <div class="merr" id="lerr"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<!-- Add/Edit Game -->
+<div class="ov" id="m-ag">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-ag')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i id="ag-ico" class="fas fa-plus"></i></div>
+    <h2 class="mtit" id="ag-tit">Agregar Juego</h2><p class="msub">Juego al catálogo digital.</p>
+    <div class="fi"><label>Nombre del juego</label><input type="text" id="ag-n" placeholder="Ej: God of War Ragnarok"/></div>
+    <div class="fi"><label>Consola</label>
+      <select id="ag-c" onchange="onAgConsoleChange()"><option>PS4</option><option>PS5</option><option>PS3</option><option>PS2</option><option>PSVita</option><option>PSP</option><option>Switch</option><option>Wii</option><option>Xbox360</option></select>
+    </div>
+    <div class="fi"><label>Disco duro</label>
+      <select id="ag-d" onchange="onAgDiskChange()"></select>
+    </div>
+    <div class="fi"><label>Género (para el filtro del catálogo de clientes)</label>
+      <select id="ag-genre">
+        <option value="">Sin clasificar</option>
+        <option value="Aventura">Aventura</option>
+        <option value="Acción">Acción</option>
+        <option value="Terror">Terror</option>
+        <option value="Deportes">Deportes</option>
+        <option value="Multijugador">Multijugador</option>
+        <option value="RPG">RPG</option>
+      </select>
+    </div>
+    <div class="fi"><label>Imagen de portada</label>
+      <div class="img-upload-field">
+        <input type="file" id="ag-img-file" accept="image/*" onchange="previewImg(this,'ag-img-prev','ag-img-b64')"/>
+        <img id="ag-img-prev" class="img-preview"/>
+        <div class="img-upload-txt"><i class="fas fa-cloud-upload-alt"></i>Toca para subir imagen desde tu dispositivo<br/><span style="color:var(--mu);font-size:.65rem">JPG, PNG</span></div>
+      </div>
+      <input type="hidden" id="ag-img-b64"/>
+    </div>
+    <button class="bp cy" onclick="saveGame()"><i class="fas fa-save"></i> Guardar</button>
+  </div>
+</div>
+
+<!-- Disk Detail Modal -->
+<div class="ov" id="m-disk">
+  <div class="mo xl">
+    <button class="mcl" onclick="cMod('m-disk')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-hdd"></i></div>
+    <h2 class="mtit" id="dm-title">Disco</h2>
+    <p class="msub" id="dm-count"></p>
+    <div class="disk-list-wrap" id="dm-list"></div>
+  </div>
+</div>
+
+<!-- Manage Disks Modal -->
+<div class="ov" id="m-manage-disks">
+  <div class="mo w">
+    <button class="mcl" onclick="cMod('m-manage-disks')"><i class="fas fa-times"></i></button>
+    <div class="mic pu"><i class="fas fa-sliders-h"></i></div>
+    <h2 class="mtit">Gestionar Discos — <span id="md-con">PS4</span></h2>
+    <p class="msub">Agrega o elimina discos duros para esta consola. Si eliminas un disco con juegos, también se eliminarán esos juegos.</p>
+    <div class="fi">
+      <label>Nuevo disco</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="md-new" placeholder="Ej: 8 (se guardará como DISCO 8)" style="flex:1" onkeydown="if(event.key==='Enter')addDisk()"/>
+        <button class="bp cy" style="width:auto;padding:9px 16px;margin-top:0" onclick="addDisk()"><i class="fas fa-plus"></i></button>
+      </div>
+    </div>
+    <hr class="mdiv"/>
+    <div id="md-list"></div>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+
+<!-- FABs -->
+<div class="fab-stack">
+  <a href="https://wa.me/59160110595" target="_blank" class="fab-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="puesto.html" class="fab-btn home" title="Menú Puesto"><i class="fas fa-tools"></i></a>
+</div>
+
+<script src="../data/games.js"></script>
+<script src="../js/app.js"></script>
+<script>
+iCat();
+updateWorklistBadge();
+</script>
+</body>
+</html>

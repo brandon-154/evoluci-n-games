@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Juegos PS4 Físicos — Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span class="badm"><i class="fas fa-crown"></i> Admin</span>
+    <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
+    <button class="nbtn dn" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+
+<div class="ip">
+  <div class="ihdr">
+    <div class="bc">
+      <a href="../index.html" class="bcl" style="text-decoration:none"><i class="fas fa-home"></i> Inicio</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <a href="puesto.html" class="bcl" style="text-decoration:none">Puesto</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <span>Físicos</span>
+    </div>
+    <h1 class="itit"><i class="fas fa-compact-disc"></i> Juegos PS4 Físicos</h1>
+  </div>
+  <div class="atbar">
+    <div class="asbox"><i class="fas fa-search"></i><input type="text" id="finp" placeholder="Buscar juego físico..." oninput="rF()"/></div>
+    <button class="nbtn" id="bf-add" style="display:none" onclick="openFisModal()"><i class="fas fa-plus"></i> Agregar</button>
+  </div>
+  <div class="agrid" id="fgrid"></div>
+</div>
+
+<!-- Login -->
+<div class="ov" id="m-login">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-login')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-crown"></i></div>
+    <h2 class="mtit">Acceso Admin</h2><p class="msub">Ingresa tus credenciales.</p>
+    <div class="fi"><label>Usuario</label><input type="text" id="lu" placeholder="admin" autocomplete="off"/></div>
+    <div class="fi"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="bp cy" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <div class="merr" id="lerr"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<!-- Add/Edit Fisico -->
+<div class="ov" id="m-af">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-af')"><i class="fas fa-times"></i></button>
+    <div class="mic gr"><i class="fas fa-compact-disc"></i></div>
+    <h2 class="mtit" id="af-tit">Agregar Juego Físico</h2><p class="msub">Juego PS4 en disco con precio.</p>
+    <input type="hidden" id="af-eid"/>
+    <div class="fi"><label>Nombre</label><input type="text" id="af-n" placeholder="Ej: God of War 4"/></div>
+    <div class="fi"><label>Precio (Bs.)</label><input type="number" id="af-p" placeholder="Ej: 80"/></div>
+    <div class="fi"><label>Imagen de portada</label>
+      <div class="img-upload-field">
+        <input type="file" id="af-img-file" accept="image/*" onchange="previewImg(this,'af-img-prev','af-img-b64')"/>
+        <img id="af-img-prev" class="img-preview"/>
+        <div class="img-upload-txt"><i class="fas fa-cloud-upload-alt"></i>Toca para subir imagen<br/><span style="color:var(--mu);font-size:.65rem">JPG, PNG</span></div>
+      </div>
+      <input type="hidden" id="af-img-b64"/>
+    </div>
+    <button class="bp gr" onclick="saveFis()"><i class="fas fa-save"></i> Guardar</button>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+
+<!-- FABs -->
+<div class="fab-stack">
+  <a href="https://wa.me/59160110595" target="_blank" class="fab-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="puesto.html" class="fab-btn home" title="Menú Puesto"><i class="fas fa-tools"></i></a>
+</div>
+
+<script src="../data/games.js"></script>
+<script src="../js/app.js"></script>
+<script>
+rF();
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Servicios y Reparaciones — Evolución Games B&R</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="pts"></canvas>
+<div class="gbg"></div>
+
+<nav>
+  <div class="nlogo"><i class="fas fa-gamepad"></i><span>Evolución Games B&amp;R</span></div>
+  <div class="nr">
+    <span class="badm"><i class="fas fa-crown"></i> Admin</span>
+    <button class="nbtn" id="btn-login-nav" onclick="oMod('m-login')"><i class="fas fa-crown"></i> Admin</button>
+    <button class="nbtn dn" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+  </div>
+</nav>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="tmsg"></span></div>
+
+<div class="ip">
+  <div class="ihdr">
+    <div class="bc">
+      <a href="../index.html" class="bcl" style="text-decoration:none"><i class="fas fa-home"></i> Inicio</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <a href="puesto.html" class="bcl" style="text-decoration:none">Puesto</a>
+      <i class="fas fa-chevron-right" style="font-size:.52rem"></i>
+      <span>Reparaciones</span>
+    </div>
+    <h1 class="itit"><i class="fas fa-wrench"></i> Servicios y Reparaciones</h1>
+  </div>
+  <div class="rwrap"><div class="rbox"><i class="fas fa-search" style="color:var(--mu)"></i><input type="text" id="rinp" placeholder="Buscar servicio..." oninput="rR()"/></div></div>
+  <div class="rfil" id="rfil">
+    <span style="font-size:.68rem;color:var(--mu)">Filtrar:</span>
+    <div id="rfilbtns" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+    <button class="nbtn" id="br-add" style="display:none;margin-left:auto" onclick="openRepModal()"><i class="fas fa-plus"></i> Agregar Servicio</button>
+  </div>
+  <div class="rgrid" id="rgrid"></div>
+</div>
+
+<!-- Login -->
+<div class="ov" id="m-login">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-login')"><i class="fas fa-times"></i></button>
+    <div class="mic cy"><i class="fas fa-crown"></i></div>
+    <h2 class="mtit">Acceso Admin</h2><p class="msub">Ingresa tus credenciales.</p>
+    <div class="fi"><label>Usuario</label><input type="text" id="lu" placeholder="admin" autocomplete="off"/></div>
+    <div class="fi"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="bp cy" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <div class="merr" id="lerr"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<!-- Add/Edit Rep -->
+<div class="ov" id="m-ar">
+  <div class="mo">
+    <button class="mcl" onclick="cMod('m-ar')"><i class="fas fa-times"></i></button>
+    <div class="mic rd"><i class="fas fa-wrench"></i></div>
+    <h2 class="mtit" id="ar-tit">Agregar Servicio</h2><p class="msub">Precio de reparación o servicio técnico.</p>
+    <input type="hidden" id="ar-eid"/>
+    <div class="fi"><label>Nombre del servicio</label><input type="text" id="ar-n" placeholder="Ej: Flasheo PS4 Slim"/></div>
+    <div class="fi"><label>Consola / Categoría</label><input type="text" id="ar-c" placeholder="Ej: PS4, PS5, Nintendo"/></div>
+    <div class="fi"><label>Precio (Bs.)</label><input type="text" id="ar-p" placeholder="Ej: 120 o Desde 80"/></div>
+    <div class="fi"><label>Descripción (opcional)</label><textarea id="ar-d" placeholder="Detalles..."></textarea></div>
+    <button class="bp rd" onclick="saveRep()"><i class="fas fa-save"></i> Guardar</button>
+  </div>
+</div>
+
+<footer><span>Evolución Games B&amp;R</span> &nbsp;·&nbsp; Sistema de Gestión &nbsp;·&nbsp; 2026</footer>
+
+<!-- FABs -->
+<div class="fab-stack">
+  <a href="https://wa.me/59160110595" target="_blank" class="fab-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="puesto.html" class="fab-btn home" title="Menú Puesto"><i class="fas fa-tools"></i></a>
+</div>
+
+<script src="../data/games.js"></script>
+<script src="../js/app.js"></script>
+<script>
+rRFil(); rR();
+</script>
+</body>
+</html>
