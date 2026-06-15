@@ -1448,3 +1448,45 @@ document.addEventListener('DOMContentLoaded',()=>{
     toggleCart(el.dataset.con, el.dataset.name, el);
   });
 });
+window.oMod = oMod;
+window.cMod = cMod;
+window.doLogin = doLogin;
+
+window.openFisModal = openFisModal;
+window.saveFis = saveFis;
+
+window.openArtModal = openArtModal;
+window.saveArt = saveArt;
+
+window.openCart = openCart;
+window.sendCartToWhatsApp = sendCartToWhatsApp;
+window.clearCart = clearCart;
+
+window.setPOpt = setPOpt;
+window.resetPrintedList = resetPrintedList;
+window.doPrint = doPrint;
+
+window.openAddGuide = openAddGuide;
+window.saveGuide = saveGuide;
+
+window.addUser = addUser;
+
+window.openRepModal = openRepModal;
+window.saveRep = saveRep;
+
+window.printIngresos = printIngresos;
+window.limpiarIngresos = limpiarIngresos;
+window.addIngreso = addIngreso;
+
+window.openAddGame = openAddGame;
+window.openWorklist = openWorklist;
+window.addWorklistItem = addWorklistItem;
+window.clearWorklist = clearWorklist;
+
+window.switchCoverTab = switchCoverTab;
+window.buscarPortadaAuto = buscarPortadaAuto;
+window.clearCoverSelected = clearCoverSelected;
+
+window.saveGame = saveGame;
+
+window.addDisk = addDisk;
