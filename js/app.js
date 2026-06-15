@@ -317,6 +317,7 @@ function iCat(){
   renderDiskTabs();
   rG();
 }
+window.iCat = iCat;
 function renderDiskTabs(){
   const wrap=document.getElementById('disktabs');
   if(!wrap) return;
