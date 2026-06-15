@@ -182,8 +182,10 @@
 <script src="../data/games.js"></script>
 <script type="module" src="../js/app.js"></script>
 <script>
-iCat();
-updateWorklistBadge();
+window.addEventListener('load', () => {
+  if (window.iCat) window.iCat();
+  if (window.updateWorklistBadge) window.updateWorklistBadge();
+});
 </script>
 </body>
 </html>
