@@ -69,11 +69,13 @@
 <script src="data/games.js"></script>
 <script type="module" src="js/app.js"></script>
 <script>
-if(role==='admin'){
+<script>
+if (typeof role !== 'undefined' && role === 'admin') {
   document.body.classList.add('is-admin');
   document.getElementById('btn-login-nav').style.display='none';
   document.getElementById('btn-logout').classList.add('on');
 }
+</script>
 </script>
 </body>
 </html>
