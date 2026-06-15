@@ -85,7 +85,9 @@
 <script src="../data/games.js"></script>
 <script type="module" src="../js/app.js"></script>
 <script>
-rF();
+window.addEventListener('load', () => {
+  if (window.nombreFuncion) window.nombreFuncion();
+});
 </script>
 </body>
 </html>
