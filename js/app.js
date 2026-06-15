@@ -122,6 +122,8 @@ function goTo(p){
 ══════════════════════════════ */
 function oMod(id){document.getElementById(id)?.classList.add('op');}
 function cMod(id){document.getElementById(id)?.classList.remove('op');}
+window.oMod = oMod;
+window.cMod = cMod;
 document.addEventListener('DOMContentLoaded', async ()=>{
   document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('op');}));
   // ── Carga catálogo desde Firebase ──
