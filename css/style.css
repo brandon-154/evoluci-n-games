@@ -600,3 +600,93 @@ html.light .gc-ph,html.light .ac-ph{background:var(--sur2)}
   .ov{align-items:flex-end;padding:0}
   @keyframes mIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 }
+
+/* ── Multi-genre checkboxes ── */
+.gcheck {
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:99px;
+  border:1px solid var(--brd);cursor:pointer;
+  font-size:.75rem;color:var(--mu);
+  transition:all .18s;user-select:none;
+}
+.gcheck:hover { border-color:var(--cy);color:var(--cy); }
+.gcheck input { display:none; }
+.gcheck:has(input:checked) {
+  background:rgba(0,212,255,.12);
+  border-color:var(--cy);
+  color:var(--cy);
+  font-weight:600;
+}
+
+/* ══════════════════════════════
+   GENRE / TAG SYSTEM
+══════════════════════════════ */
+
+/* Chips en modal admin */
+.gcheck {
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:99px;cursor:pointer;
+  border:1px solid var(--brd);font-size:.74rem;color:var(--mu);
+  transition:all .15s;user-select:none;
+}
+.gcheck:hover { border-color:var(--cy);color:var(--cy); }
+.gcheck input { display:none; }
+.gcheck:has(input:checked) {
+  background:rgba(0,212,255,.12);border-color:var(--cy);
+  color:var(--cy);font-weight:600;
+}
+
+/* Tags en card de juego (catálogo clientes) */
+.gc-tags { display:flex;flex-wrap:wrap;gap:3px;padding:4px 8px 6px; }
+.gtag {
+  font-size:.55rem;padding:2px 7px;border-radius:99px;
+  background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);
+  color:var(--cy);font-weight:600;letter-spacing:.3px;
+}
+.gtag:first-child {
+  background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3);
+  color:#a78bfa;
+}
+
+/* Barra de filtros cliente */
+#client-genre-tabs {
+  display:none;flex-wrap:wrap;align-items:center;
+  gap:6px;padding:12px 22px;border-bottom:1px solid var(--brd);
+}
+.cf-sep {
+  font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--mu);padding:2px 4px;flex-basis:100%;margin-top:4px;
+}
+.cf-sep:first-child { margin-top:0; }
+.cf-chip {
+  cursor:pointer;transition:all .15s;user-select:none;
+  font-size:.72rem;padding:4px 12px;border-radius:99px;
+}
+.cf-chip.on {
+  background:rgba(124,58,237,.18);border-color:#7c3aed;color:#a78bfa;font-weight:700;
+}
+.cf-tag.on {
+  background:rgba(0,212,255,.12);border-color:var(--cy);color:var(--cy);font-weight:700;
+}
+.cf-clear {
+  font-size:.7rem;padding:4px 10px;border-radius:99px;cursor:pointer;
+  border:1px solid rgba(255,71,87,.35);color:var(--dn);background:rgba(255,71,87,.07);
+  display:flex;align-items:center;gap:5px;transition:all .15s;
+}
+.cf-clear:hover { background:rgba(255,71,87,.15); }
+
+/* ══ Genre/Tag system ══ */
+.gcheck{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;cursor:pointer;border:1px solid var(--brd);font-size:.74rem;color:var(--mu);transition:all .15s;user-select:none}
+.gcheck:hover{border-color:var(--cy);color:var(--cy)}
+.gcheck input{display:none}
+.gcheck:has(input:checked){background:rgba(0,212,255,.12);border-color:var(--cy);color:var(--cy);font-weight:600}
+.gc-tags{display:flex;flex-wrap:wrap;gap:3px;padding:4px 8px 6px}
+.gtag{font-size:.55rem;padding:2px 7px;border-radius:99px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--cy);font-weight:600}
+.gtag:first-child{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3);color:#a78bfa}
+#client-genre-tabs{display:none;flex-wrap:wrap;align-items:center;gap:6px;padding:12px 22px;border-bottom:1px solid var(--brd)}
+.cf-sep{font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);padding:2px 4px;flex-basis:100%;margin-top:4px}
+.cf-chip{cursor:pointer;transition:all .15s;user-select:none;font-size:.72rem;padding:4px 12px;border-radius:99px}
+.cf-chip.on{background:rgba(124,58,237,.18);border-color:#7c3aed;color:#a78bfa;font-weight:700}
+.cf-tag.on{background:rgba(0,212,255,.12);border-color:var(--cy);color:var(--cy);font-weight:700}
+.cf-clear{font-size:.7rem;padding:4px 10px;border-radius:99px;cursor:pointer;border:1px solid rgba(255,71,87,.35);color:var(--dn);background:rgba(255,71,87,.07);display:flex;align-items:center;gap:5px;transition:all .15s}
+.cf-clear:hover{background:rgba(255,71,87,.15)}

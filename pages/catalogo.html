@@ -100,16 +100,32 @@
     <div class="fi"><label>Disco duro</label>
       <select id="ag-d" onchange="onAgDiskChange()"></select>
     </div>
-    <div class="fi"><label>Género (para el filtro del catálogo de clientes)</label>
-      <select id="ag-genre">
-        <option value="">Sin clasificar</option>
-        <option value="Aventura">Aventura</option>
+    <div class="fi">
+      <label>Género <span style="font-size:.65rem;color:var(--mu);font-weight:400">(elige uno)</span></label>
+      <select id="ag-genre-sel">
+        <option value="">— Seleccionar —</option>
         <option value="Acción">Acción</option>
+        <option value="Aventura">Aventura</option>
         <option value="Terror">Terror</option>
         <option value="Deportes">Deportes</option>
-        <option value="Multijugador">Multijugador</option>
-        <option value="RPG">RPG</option>
+        <option value="Lucha">Lucha</option>
+        <option value="Mundo Abierto">Mundo Abierto</option>
+        <option value="Disparos">Disparos</option>
+        <option value="Supervivencia">Supervivencia</option>
+        <option value="Infantil">Infantil</option>
       </select>
+    </div>
+    <div class="fi">
+      <label>Etiquetas <span style="font-size:.65rem;color:var(--mu);font-weight:400">(opcional — varias)</span></label>
+      <div id="ag-tag-checks" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+        <label class="gcheck"><input type="checkbox" value="2 Jugadores"/> 2 Jugadores</label>
+        <label class="gcheck"><input type="checkbox" value="Hasta 4 Jugadores"/> Hasta 4 Jugadores</label>
+        <label class="gcheck"><input type="checkbox" value="Fútbol"/> Fútbol</label>
+        <label class="gcheck"><input type="checkbox" value="Anime"/> Anime</label>
+        <label class="gcheck"><input type="checkbox" value="Zombies"/> Zombies</label>
+        <label class="gcheck"><input type="checkbox" value="Historia"/> Historia</label>
+        <label class="gcheck"><input type="checkbox" value="Coches"/> Coches</label>
+      </div>
     </div>
     <div class="fi"><label>Imagen de portada</label>
       <!-- Pestañas -->

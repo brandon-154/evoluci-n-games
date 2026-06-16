@@ -69,7 +69,9 @@ const DEFAULT_GUIDES = [
   { id: 5, console: 'Switch', title: 'Nintendo Switch — Modo RCM', desc: 'Solo modelos no parchados', steps: ['Solo para Switch sin parche (pre-2018 aprox).', 'Apaga completamente la Switch.', 'Inserta el jig RCM en los pines del Joy-Con derecho.', 'Mantén Vol+ y presiona Power para entrar en RCM.', 'Conecta al PC y usa TegraRcmGUI para inyectar payload.', 'Arranca Atmosphere automáticamente.', 'Los juegos van en la microSD.'] },
 ];
 
-const GENRE_LIST = ['Aventura', 'Acción', 'Terror', 'Deportes', 'Multijugador', 'RPG'];
+const GENRES_DEF = ['Acción','Aventura','Terror','Deportes','Lucha','Mundo Abierto','Disparos','Supervivencia','Infantil'];
+const TAGS_DEF = ['2 Jugadores','Hasta 4 Jugadores','Fútbol','Anime','Zombies','Historia','Coches'];
+const GENRE_LIST = [...GENRES_DEF, ...TAGS_DEF];
 const CONSOLE_ORDER = ['PS4', 'PS5', 'PS3', 'Switch', 'PSP', 'PSVita', 'PS2', 'Xbox360', 'Wii'];
 function orderedConsoles() {
   const keys = Object.keys(window.GDB || {});
@@ -476,93 +478,20 @@ function cIco(c) {
 }
 
 // ── Base de datos de géneros por palabras clave ──
-const GAME_GENRES = {
-  'Acción': [
-    'call of duty','battlefield','doom','metal gear','assassin','devil may cry',
-    'god of war','batman','spider-man','marvel','mortal kombat','tekken','street fighter',
-    'gta','grand theft auto','far cry','just cause','saints row','mafia','watch dogs',
-    'sekiro','nioh','ghostrunner','sifu','returnal','control','atomic heart','wolfenstein',
-    'uncharted','tomb raider','prince of persia','dishonored','gravity rush','infamous',
-    'ratchet','crash bandicoot','sonic','mega man','castlevania','cuphead','hollow knight',
-    'hades','dead cells','bloodborne','lies of p','black myth','stellar blade',
-    'ghost of tsushima','aragami','katana zero','bayonetta','vanquish',
-    'rise of the ronin','wild hearts','wo long','stranger of paradise',
-  ],
-  'Aventura': [
-    'zelda','horizon','red dead','witcher','cyberpunk','last of us','days gone',
-    'ghost of tsushima','death stranding','alan wake','plague tale',
-    'disco elysium','outer worlds','bioshock','subnautica','no man sky',
-    'firewatch','life is strange','detroit become human','heavy rain','beyond two souls',
-    'until dawn','man of medan','little hope','house of ashes','the quarry',
-    'a hat in time','psychonauts','spyro','sly cooper','medievil',
-    'shadow of the colossus','journey','abzu','gris','spiritfarer','stardew',
-    'kena','astro bot','astro playroom','littlebigplanet','sackboy','knack',
-    'toem','unpacking','donut county','rdr2','red dead redemption',
-    'pokemon','kirby','yoshi','captain toad','luigi mansion',
-    'mario odyssey','mario galaxy','3d world','super mario','mario sunshine',
-  ],
-  'Terror': [
-    'resident evil','re2','re3','re4','re7','re8','re village','silent hill',
-    'outlast','alien isolation','amnesia','dead space','evil within','visage',
-    'soma','little nightmares','layers of fear','blair witch','poppy playtime',
-    'fnaf','five nights','bendy','phasmophobia','horror','survival horror',
-    'fatal frame','project zero','darkwood','carrion','signalis','tormented souls',
-    'crow country','still wakes the deep','alan wake 2','madison','scorn',
-    'the forest','sons of the forest','green hell','daymare','remothered',
-    'observer','close to the sun','doki doki','hello neighbor','granny',
-    'dying light','daylight','outlast trials',
-  ],
-  'Deportes': [
-    'fifa','fc 24','fc 25','fc24','fc25','pes','efootball',
-    'nba','nhl','nfl','mlb','ufc','wwe','boxing','golf','motogp',
-    'f1 ','formula 1','formula1','racing','nascar','dirt',
-    'need for speed','nfs','gran turismo','forza','rocket league',
-    'tony hawk','skater xl','riders republic','steep','pga tour','top spin',
-    'mario tennis','mario golf','mario strikers','switch sports','wii sports',
-    'nba 2k','nba2k','madden','mlb the show','tennis world tour',
-  ],
-  'Multijugador': [
-    'fortnite','apex legends','warzone','pubg','fall guys','among us',
-    'overwatch','rainbow six','siege','minecraft','left 4 dead',
-    'borderlands','destiny','division','outriders','deep rock','back 4 blood',
-    'it takes two','a way out','human fall flat','gang beasts','moving out',
-    'overcooked','tools up','party animals','pummel party','brawlhalla','multiversus',
-    'lego marvel','lego star wars','lego harry','lego batman','lego jurassic',
-    'lego avengers','lego city','lego ninjago','lego ',
-    'mario party','mario kart','smash bros','super smash',
-    'crash team','team sonic','naruto ultimate','dragon ball fighterz',
-    'dragon ball sparking','my hero academia','demon slayer','jujutsu',
-    'dbfz','naruto storm','helldivers','remnant','grounded','valheim',
-    'sackboy','kirby forgotten','kirby dream','kirby return',
-  ],
-  'RPG': [
-    'final fantasy','ff7','ff15','ff16','ffvii','ffxv','ffxvi',
-    'persona','tales of','dragon quest','dark souls','elden ring',
-    'monster hunter','diablo','baldur','divinity','fallout','skyrim',
-    'cyberpunk','outer worlds','mass effect','dragon age',
-    'jedi fallen','jedi survivor','kingdom hearts',
-    'stranger of paradise','octopath','triangle strategy','fire emblem',
-    'xenoblade','ni no kuni','atelier','ryza','trails','cold steel',
-    'ys viii','ys ix','legend of heroes','greedfall','star ocean',
-    'tales of arise','tales of berseria','tales of vesperia',
-    'dragon ball xenoverse','xenoverse','one piece odyssey',
-    'pokemon legends','pokemon sword','pokemon scarlet','pokemon violet',
-    'digimon','legend of mana','secret of mana','trials of mana',
-    'valkyria chronicles','bravely default','lost odyssey',
-  ],
-};
+const GAME_DB = {"2K 25":["Deportes","2 Jugadores"],"A Plague Tale Innocence":["Aventura","Historia"],"A Way Out":["Acción","2 Jugadores"],"AMPLITUDE":["Acción"],"Agony":["Terror"],"Alan Wake":["Terror","Historia"],"Alien Isolation":["Terror","Historia"],"Aragami":["Acción","Historia"],"Arizona Sunshine VR":["Disparos","Zombies"],"Assassin's Creed IV":["Aventura","Historia"],"Assassin's Creed Mirage":["Aventura","Historia"],"Assassin's Creed Odyssey":["Mundo Abierto","Historia"],"Assassin's Creed Origins":["Mundo Abierto","Historia"],"Assassin's Creed Syndicate":["Aventura","Historia"],"Assassin's Creed The Ezio Collection":["Aventura","Historia"],"Assassin's Creed Unity":["Aventura","Historia"],"Assassin's Creed Valhalla":["Mundo Abierto","Historia"],"Assetto Corsa Competizione":["Deportes","Coches"],"Atomic Heart":["Disparos","Historia"],"Attack on Titan 2 Final Battle":["Acción","Anime"],"Back 4 Blood":["Disparos","Zombies","Hasta 4 Jugadores"],"Batman Arkham Asylum":["Acción","Historia"],"Batman Arkham Knight":["Acción","Mundo Abierto","Historia"],"Batman Return to Arkham City":["Acción","Historia"],"Battle Chasers Nightwar":["Aventura"],"Battlefield 1":["Disparos","Historia","2 Jugadores"],"Battlefield V":["Disparos","Historia","2 Jugadores"],"Bayonetta":["Acción"],"Ben 10 Power Trip":["Acción","Infantil","Hasta 4 Jugadores"],"Bendy and the Ink Machine":["Terror","Historia"],"Biomutant":["Mundo Abierto"],"Bioshock Infinite":["Disparos","Historia"],"Bioshock The Collection":["Disparos","Historia"],"Blasphemous":["Acción","Historia"],"Blasphemous 2":["Acción","Historia"],"Blizzard Arcade Collection":["Acción","Hasta 4 Jugadores"],"Bloodborne":["Acción","Historia"],"Bloodborne GOTY":["Acción","Historia"],"Bluey The Videogame":["Infantil","Hasta 4 Jugadores"],"Boomerang Fu":["Acción","Hasta 4 Jugadores"],"Borderlands 3":["Disparos","Hasta 4 Jugadores"],"Borderlands The Handsome Collection":["Disparos","Hasta 4 Jugadores"],"Caballeros del Zodiaco":["Lucha","Anime"],"Call of Duty Advanced Warfare":["Disparos","Historia"],"Call of Duty Black Ops 3":["Disparos","Zombies","2 Jugadores"],"Call of Duty Black Ops 4":["Disparos","Zombies"],"Call of Duty Black Ops 6":["Disparos","Zombies"],"Call of Duty Cold War":["Disparos","Historia","Zombies"],"Call of Duty Infinite Warfare":["Disparos"],"Call of Duty MW2 Campaign Remastered":["Disparos","Historia"],"Call of Duty Modern Warfare":["Disparos","Historia"],"Call of Duty Modern Warfare II":["Disparos","Historia"],"Call of Duty Vanguard":["Disparos","Historia"],"Call of Duty WWII":["Disparos","Historia"],"Captain Tsubasa Rise of New Champions":["Deportes","Anime","Fútbol","2 Jugadores"],"Cars 3 Driven to Win":["Infantil","Coches","Hasta 4 Jugadores"],"Cartoon Network Battle Crashers":["Acción","Infantil","Hasta 4 Jugadores"],"Castle Crashers Remastered":["Acción","Hasta 4 Jugadores"],"Castlevania Anniversary Collection":["Acción","Historia"],"Cat Quest 3":["Aventura"],"Celeste":["Acción"],"Chess Ultra":["Deportes","2 Jugadores"],"Chimparty":["Infantil","Hasta 4 Jugadores"],"Cities Skylines":["Deportes"],"CoD MW2 Campaign Remastered":["Disparos","Historia"],"Contra Anniversary Collection":["Disparos","Hasta 4 Jugadores"],"Contra Rogue Corps":["Disparos","Hasta 4 Jugadores"],"Control PS4":["Acción","Historia"],"Crash Bandicoot 4":["Acción","Infantil"],"Crash Bandicoot N Sane Trilogy":["Acción","Infantil"],"Crash Drive 3":["Acción","Coches","Hasta 4 Jugadores"],"Crash Team Racing":["Infantil","Coches","Hasta 4 Jugadores"],"Crash Team Racing Nitro Fueled":["Infantil","Coches","Hasta 4 Jugadores"],"Creed Rise to Glory VR":["Deportes"],"Cuphead":["Acción","2 Jugadores"],"DIRT 4":["Deportes","Coches"],"DIRT 5":["Deportes","Coches","Hasta 4 Jugadores"],"DOOM 2016":["Disparos"],"DOOM Eternal":["Disparos"],"Dangerous Driving":["Deportes","Coches"],"Dark Souls II":["Acción","Historia"],"Dark Souls III":["Acción","Historia"],"Dark Souls Remastered":["Acción","Historia"],"Darksiders Genesis":["Acción","2 Jugadores"],"Darksiders II":["Acción"],"Darksiders II Deathinitive Edition":["Acción"],"Darksiders III":["Acción"],"Darksiders Warmastered Edition":["Acción"],"DayZ":["Supervivencia","Zombies"],"Days Gone":["Mundo Abierto","Zombies"],"Dead Island 2":["Acción","Zombies"],"Dead Island Definitive Edition":["Acción","Zombies","2 Jugadores"],"Dead Rising":["Acción","Zombies"],"Dead or Alive 5 Last Round":["Lucha","2 Jugadores"],"Deadpool":["Acción"],"Death Stranding":["Aventura","Historia"],"Demon Slayer":["Lucha","Anime"],"Demon Slayer Kimetsu no Yaiba":["Lucha","Anime"],"Desperados III":["Acción","Historia"],"Detroit Become Human":["Aventura","Historia"],"Devil May Cry 4 Special Edition":["Acción"],"Devil May Cry 5":["Acción"],"Devil May Cry HD Collection":["Acción","Historia"],"Diablo II":["Acción"],"Diablo II Resurrected":["Acción"],"Diablo III Reaper of Souls":["Acción","Hasta 4 Jugadores"],"Digimon Story Cyber Sleuth":["Aventura","Anime"],"Digimon World Next Order":["Aventura","Anime"],"Disney Classic Aladdin and Lion King":["Acción","Infantil"],"DmC Devil May Cry Definitive Edition":["Acción"],"Dragon Ball Budokai 3":["Lucha","Anime","2 Jugadores"],"Dragon Ball FighterZ":["Lucha","Anime","2 Jugadores"],"Dragon Ball Tenkaichi 4":["Lucha","Anime","2 Jugadores"],"Dragon Ball Xenoverse 2":["Lucha","Anime","Hasta 4 Jugadores"],"Dragon Ball Z Budokai Tenkaichi 3":["Lucha","Anime","2 Jugadores"],"Dragon Ball Z Kakarot":["Aventura","Anime","Historia"],"Dragon Quest XI":["Aventura","Historia"],"Dying Light 2":["Supervivencia","Zombies","Mundo Abierto"],"Dying Light 2 Stay Human":["Supervivencia","Zombies","Mundo Abierto"],"Dying Light Enhanced Edition":["Supervivencia","Zombies","Mundo Abierto"],"EA Sports FC 25":["Deportes","Fútbol","2 Jugadores"],"EA Sports FC 26":["Deportes","Fútbol","2 Jugadores"],"EA Sports UFC 2":["Deportes","Lucha","2 Jugadores"],"EA Sports UFC 3":["Deportes","Lucha","2 Jugadores"],"EA Sports UFC 4":["Deportes","Lucha","2 Jugadores"],"Elden Ring":["Acción","Mundo Abierto","Historia"],"Enter the Gungeon":["Disparos","2 Jugadores"],"Evil West":["Acción","2 Jugadores"],"FIFA 21":["Deportes","Fútbol","2 Jugadores"],"FIFA 22":["Deportes","Fútbol","2 Jugadores"],"FIFA 23":["Deportes","Fútbol","2 Jugadores"],"FIFA 24":["Deportes","Fútbol","2 Jugadores"],"FIFA 25":["Deportes","Fútbol","2 Jugadores"],"Far Cry":["Disparos","Mundo Abierto"],"Far Cry 5":["Disparos","Mundo Abierto"],"Far Cry 6":["Disparos","Mundo Abierto"],"Far Cry New Dawn":["Disparos","Mundo Abierto"],"Far Cry Primal":["Disparos","Mundo Abierto","Historia"],"Fast and Furious Spy Racers":["Infantil","Coches"],"Fatal Frame Maiden of Black Water":["Terror","Historia"],"Final Fantasy VII Remake":["Acción","Historia"],"Final Fantasy XV":["Acción","Mundo Abierto","Historia"],"Fire Pro Wrestling World":["Deportes","Lucha","2 Jugadores"],"Five Nights at Freddy's":["Terror"],"Five Nights at Freddy's 2":["Terror"],"Five Nights at Freddy's 3":["Terror"],"Five Nights at Freddy's 4":["Terror"],"Five Nights at Freddy's Security Breach":["Terror"],"Five Nights at Freddy's Sister Location":["Terror"],"Five Nights at Freddy's VR Help Wanted":["Terror"],"FlatOut 4 Total Insanity":["Deportes","Coches","Hasta 4 Jugadores"],"GRID":["Deportes","Coches","2 Jugadores"],"GTA San Andreas":["Mundo Abierto","Historia"],"GTA V":["Mundo Abierto","Historia"],"Gabby's Dollhouse Ready to Party":["Infantil","Hasta 4 Jugadores"],"Gang Beasts":["Lucha","Hasta 4 Jugadores"],"Garfield Kart Furious Racing":["Infantil","Coches","Hasta 4 Jugadores"],"Garfield Lasagna Party":["Infantil","Hasta 4 Jugadores"],"Ghost Recon Wildlands":["Disparos","Mundo Abierto","Hasta 4 Jugadores"],"Ghost of Tsushima":["Acción","Mundo Abierto","Historia"],"Ghost of Tsushima Director's Cut":["Acción","Mundo Abierto","Historia"],"Ghostbusters":["Acción","Historia"],"God of War 4":["Acción","Historia"],"God of War I":["Acción","Historia"],"God of War II":["Acción","Historia"],"God of War III Remastered":["Acción","Historia"],"God of War Ragnarok":["Acción","Historia"],"Gran Turismo Sport":["Deportes","Coches","2 Jugadores"],"Guardianes de la Galaxia":["Acción","Historia"],"Hasbro Family Fun Pack":["Infantil","Hasta 4 Jugadores"],"Hellblade Senua's Sacrifice":["Acción","Historia"],"Hitman 2":["Acción","Historia"],"Hitman Blood Money":["Acción","Historia"],"Hitman The Complete First Season":["Acción","Historia"],"Hogwarts Legacy":["Mundo Abierto","Historia"],"Hollow Knight Silksong":["Acción"],"Horizon Forbidden West":["Mundo Abierto","Historia"],"Horizon Zero Dawn":["Mundo Abierto","Historia"],"Hotel Transylvania 3":["Infantil"],"Human Fall Flat":["Acción","Hasta 4 Jugadores"],"Infamous Second Son":["Acción","Mundo Abierto"],"Injustice 2 Legendary Edition":["Lucha","2 Jugadores"],"Inside":["Aventura"],"It Takes Two":["Aventura","2 Jugadores"],"Jump Force":["Lucha","Anime","2 Jugadores"],"Just Cause 3":["Acción","Mundo Abierto"],"Just Cause 4":["Acción","Mundo Abierto"],"Just Dance 2016":["Deportes","Hasta 4 Jugadores"],"King of Fighters XIV":["Lucha","2 Jugadores"],"Kingdom Hearts 1.5 + 2.5":["Aventura","Historia"],"Kingdom Hearts 2.8":["Aventura","Historia"],"Kingdom Hearts III":["Aventura","Historia"],"Knack":["Acción","Infantil"],"LEGO DC Super Villains":["Acción","Infantil","Hasta 4 Jugadores"],"LEGO Jurassic World":["Aventura","Infantil","Hasta 4 Jugadores"],"LEGO Marvel Super Heroes":["Acción","Infantil","Hasta 4 Jugadores"],"La Familia Addams":["Infantil","Hasta 4 Jugadores"],"Lies of P":["Acción","Historia"],"Little Nightmares Complete Edition":["Terror","Historia"],"Little Nightmares II":["Terror","Historia"],"Mad Max":["Acción","Mundo Abierto"],"Marvel vs Capcom Infinite":["Lucha","2 Jugadores"],"Marvel's Avengers":["Acción","Hasta 4 Jugadores"],"Marvel's Spider-Man":["Acción","Mundo Abierto","Historia"],"Marvel's Spider-Man Miles Morales":["Acción","Mundo Abierto","Historia"],"MediEvil":["Acción","Historia"],"Mega Man Legacy Collection":["Acción","Historia"],"Metal Gear Solid V Ground Zeroes":["Acción","Historia"],"Metal Gear Solid V The Phantom Pain":["Acción","Mundo Abierto","Historia"],"Metal Slug Anthology":["Disparos","Hasta 4 Jugadores"],"Metro":["Disparos","Supervivencia","Historia"],"Middle Earth Shadow of Mordor":["Acción","Historia"],"Minecraft":["Supervivencia","Hasta 4 Jugadores"],"Mirror's Edge Catalyst":["Acción"],"Moe Chronicle VR":["Aventura"],"Mortal Kombat 11":["Lucha","2 Jugadores"],"Mortal Kombat XL":["Lucha","2 Jugadores"],"My Hero One's Justice 2":["Lucha","Anime","2 Jugadores"],"NBA 2K21":["Deportes","2 Jugadores"],"Naruto Ultimate Ninja Storm 4":["Lucha","Anime","2 Jugadores"],"Naruto x Boruto Ultimate Ninja Storm Connections":["Lucha","Anime","2 Jugadores"],"Need for Speed Heat":["Deportes","Coches"],"Need for Speed Payback":["Deportes","Coches"],"Nier Automata":["Acción","Historia"],"Nier Replicant":["Acción","Historia"],"One Piece Pirate Warriors 4":["Acción","Anime","Hasta 4 Jugadores"],"Outlast":["Terror","Historia"],"Overcooked 2":["Acción","Hasta 4 Jugadores"],"PES 2016":["Deportes","Fútbol","2 Jugadores"],"PES 2018":["Deportes","Fútbol","2 Jugadores"],"PES 2020":["Deportes","Fútbol","2 Jugadores"],"PES 2021":["Deportes","Fútbol","2 Jugadores"],"PES 2025":["Deportes","Fútbol","2 Jugadores"],"Pes 2023":["Deportes","Fútbol","2 Jugadores"],"Plants vs Zombies Replanted":["Acción","Zombies","Infantil"],"PlayStation VR Worlds":["Aventura"],"Pro Evolution Soccer":["Deportes","Fútbol","2 Jugadores"],"Ratchet and Clank":["Acción","Infantil"],"Rayman Legends":["Acción","Infantil","Hasta 4 Jugadores"],"Red Dead Redemption 2":["Mundo Abierto","Historia"],"Resident Evil 2":["Terror","Historia"],"Resident Evil 3":["Terror","Historia"],"Resident Evil 4":["Terror","Historia"],"Resident Evil 4 Remake":["Terror","Historia"],"Resident Evil 4 Remastered":["Terror","Historia"],"Resident Evil 5":["Terror","2 Jugadores","Historia"],"Resident Evil 6":["Terror","2 Jugadores","Historia"],"Resident Evil 7 Gold Edition":["Terror","Historia"],"Resident Evil Origins Collection":["Terror","Historia"],"Resident Evil Village":["Terror","Historia"],"Rise of the Tomb Raider":["Aventura","Historia"],"Rocket League":["Deportes","Fútbol","Coches","Hasta 4 Jugadores"],"Sekiro Shadows Die Twice":["Acción","Historia"],"Shadow of the Colossus":["Aventura","Historia"],"Shadow of the Tomb Raider":["Aventura","Historia"],"Silksong":["Acción"],"Sky Force Reloaded":["Disparos"],"Sniper Elite 4":["Disparos","Historia","2 Jugadores"],"Spyro Reignited Trilogy":["Acción","Infantil"],"Star Wars Battlefront II":["Disparos","Historia","Hasta 4 Jugadores"],"Star Wars Jedi Fallen Order":["Acción","Historia"],"Stray":["Aventura"],"Street Fighter 30th Anniversary":["Lucha","Historia","2 Jugadores"],"Street Fighter 6":["Lucha","2 Jugadores"],"Street Fighter V":["Lucha","2 Jugadores"],"Subnautica":["Supervivencia"],"Super Bomberman":["Acción","Hasta 4 Jugadores"],"Syberia 3":["Aventura","Historia"],"TRICKY TOWERS":["Acción","Hasta 4 Jugadores"],"Team Sonic Racing":["Deportes","Coches","Hasta 4 Jugadores"],"Tekken 4":["Lucha","2 Jugadores"],"Tekken 6":["Lucha","2 Jugadores"],"Tekken 7":["Lucha","2 Jugadores"],"Terminator Resistance":["Disparos","Supervivencia","Historia"],"The Callisto Protocol":["Terror","Historia"],"The Crew":["Deportes","Coches","Mundo Abierto"],"The Dark Pictures Man of Medan":["Terror","Historia","2 Jugadores"],"The Elder Scrolls V Skyrim":["Mundo Abierto","Historia"],"The Evil Within":["Terror","Historia"],"The Evil Within 2":["Terror","Historia"],"The Last Guardian":["Aventura","Historia"],"The Last of Us Part II":["Aventura","Supervivencia","Historia"],"The Last of Us Remastered":["Aventura","Supervivencia","Historia"],"The Order 1886":["Acción","Historia"],"The Technomancer":["Acción"],"The Walking Dead Onslaught VR":["Acción","Zombies"],"The Witcher 3 GOTY":["Mundo Abierto","Historia"],"Tomb Raider":["Aventura","Historia"],"Toy Story":["Acción","Infantil"],"ULTIMATE CHICKEN HORSE":["Acción","Hasta 4 Jugadores"],"Uncharted 4":["Aventura","Historia"],"Uncharted Nathan Drake Collection":["Aventura","Historia"],"Uncharted The Lost Legacy":["Aventura","Historia"],"Unruly Heroes":["Acción","Hasta 4 Jugadores"],"Until Dawn":["Terror","Historia"],"Until Dawn Rush of Blood":["Terror"],"WWE 2K22":["Deportes","Lucha","2 Jugadores"],"WWE 2K24":["Deportes","Lucha","2 Jugadores"],"Watch Dogs 2":["Acción","Mundo Abierto"],"Watch Dogs Legion":["Acción","Mundo Abierto"],"World War Z":["Disparos","Zombies","Hasta 4 Jugadores"],"eFootball 2024":["Deportes","Fútbol","2 Jugadores"],"eFootball Pes 26":["Deportes","Fútbol","2 Jugadores"],"BEYOND T":["Aventura","Historia"],"BORDERLAND":["Disparos","Hasta 4 Jugadores"]};
 
-function getGenre(name) { return GENRES[name] || 'Sin clasificar'; }
-
-function guessGenre(name) {
-  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
+function getGameTags(name) {
+  if (GENRES[name] && Array.isArray(GENRES[name]) && GENRES[name].length) return GENRES[name];
+  if (GAME_DB[name]) return GAME_DB[name];
   const lower = name.toLowerCase();
-  for (const [genre, kws] of Object.entries(GAME_GENRES)) {
-    if (kws.some(kw => lower.includes(kw))) return genre;
-  }
-  return null;
+  for (const [k,v] of Object.entries(GAME_DB)) { if (k.toLowerCase()===lower) return v; }
+  return ['Acción'];
 }
-
+function getGameGenre(name) { return getGameTags(name)[0] || 'Acción'; }
+function gameHasTag(name, tag) { return getGameTags(name).includes(tag); }
+function getGenre(name) { return getGameGenre(name); }
+function getGenres(name) { return getGameTags(name); }
+function hasGenre(name, tag) { return gameHasTag(name, tag); }
 /* ────────────────────────────────────────────
    CATÁLOGO ADMIN
 ──────────────────────────────────────────── */
@@ -785,7 +714,8 @@ function openAddGame() {
   document.getElementById('ag-ico').className = 'fas fa-plus';
   document.getElementById('ag-n').value = '';
   document.getElementById('ag-c').value = aCon;
-  document.getElementById('ag-genre').value = '';
+  const _gsel = document.querySelector('#ag-genre-sel'); if (_gsel) _gsel.value = '';
+  document.querySelectorAll('#ag-tag-checks input').forEach(cb => cb.checked = false);
   refreshDiskOptions(aCon, aDisk !== 'Todos' ? aDisk : null);
   resetCoverTabs();
   oMod('m-ag');
@@ -797,7 +727,9 @@ function editGame(con, disk, name) {
   document.getElementById('ag-ico').className = 'fas fa-pen';
   document.getElementById('ag-n').value = name;
   document.getElementById('ag-c').value = con;
-  document.getElementById('ag-genre').value = GENRES[name] || '';
+  const _tags = getGameTags(name); const _genre = _tags[0]||''; const _etags = _tags.slice(1);
+  const _gs = document.querySelector('#ag-genre-sel'); if (_gs) _gs.value = _genre;
+  document.querySelectorAll('#ag-tag-checks input').forEach(cb => { cb.checked = _etags.includes(cb.value); });
   refreshDiskOptions(con, disk);
   resetCoverTabs();
   const img = GIMGS[con + '::' + name] || '';
@@ -813,7 +745,9 @@ function saveGame() {
   const con = document.getElementById('ag-c')?.value;
   const disk = document.getElementById('ag-d')?.value;
   const img = document.getElementById('ag-img-b64')?.value;
-  const genre = document.getElementById('ag-genre')?.value;
+  const genreVal = document.querySelector('#ag-genre-sel')?.value || '';
+  const tagChecks = Array.from(document.querySelectorAll('#ag-tag-checks input:checked')).map(c => c.value);
+  const genre = genreVal ? [genreVal, ...tagChecks] : tagChecks;
   if (!newName) { toast('Escribe el nombre del juego', 'e'); return; }
   if (!con || !disk || disk === '__new__') { toast('Selecciona un disco válido', 'e'); return; }
   if (!window.GDB[con]) window.GDB[con] = {};
@@ -835,7 +769,7 @@ function saveGame() {
 
   if (!window.GDB[con][disk].includes(newName)) window.GDB[con][disk].push(newName);
   if (img) GIMGS[con + '::' + newName] = img;
-  if (genre) GENRES[newName] = genre; else delete GENRES[newName];
+  if (genre.length) GENRES[newName] = genre; else delete GENRES[newName];
 
   save();
   cMod('m-ag');
@@ -1531,18 +1465,26 @@ function renderClientConsoles() {
   }).join('');
 }
 
-function renderClientGenreTabs(all) {
+let activeFilters = new Set();
+function renderClientFilterBar(all) {
   const wrap = document.getElementById('client-genre-tabs');
   if (!wrap) return;
   if (!all.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-  const present = new Set(all.map(g => guessGenre(g.name)).filter(Boolean));
-  const tabs = ['Todos', ...GENRE_LIST.filter(g => present.has(g))];
-  if (tabs.length <= 1) { wrap.style.display = 'none'; return; }
+  const pG = new Set(), pT = new Set();
+  all.forEach(g => { const t=getGameTags(g.name); if(t[0]) pG.add(t[0]); t.slice(1).forEach(x=>pT.add(x)); });
+  const aG = GENRES_DEF.filter(g=>pG.has(g)), aT = TAGS_DEF.filter(t=>pT.has(t));
+  if (!aG.length && !aT.length) { wrap.style.display='none'; return; }
+  let html = activeFilters.size > 0 ? `<div class="cf-clear" onclick="clearAllFilters()"><i class="fas fa-times"></i> Limpiar</div>` : '';
+  if (aG.length) { html += `<span class="cf-sep">Género</span>` + aG.map(g=>`<div class="ctb cf-chip ${activeFilters.has(g)?'on':''}" onclick="toggleFilter('${escAttr(g)}')">${g}</div>`).join(''); }
+  if (aT.length) { html += `<span class="cf-sep">Etiquetas</span>` + aT.map(t=>`<div class="ctb cf-chip cf-tag ${activeFilters.has(t)?'on':''}" onclick="toggleFilter('${escAttr(t)}')">${t}</div>`).join(''); }
   wrap.style.display = 'flex';
-  wrap.innerHTML = tabs.map(g =>
-    `<div class="ctb ${activeClientGenre === g ? 'on' : ''}" onclick="setClientGenre('${escAttr(g)}')">${g}</div>`).join('');
+  wrap.innerHTML = html;
 }
-function setClientGenre(g) { activeClientGenre = g; renderClientGames(); }
+function toggleFilter(tag) { if(activeFilters.has(tag)) activeFilters.delete(tag); else activeFilters.add(tag); renderClientGames(); }
+function clearAllFilters() { activeFilters.clear(); renderClientGames(); }
+function setClientGenre(g) { activeFilters.clear(); if(g!=='Todos') activeFilters.add(g); renderClientGames(); }
+// alias for backward compat
+function renderClientGenreTabs(all) { renderClientFilterBar(all); }
 
 function renderClientGames() {
   const grid = document.getElementById('client-ggrid');
@@ -1561,8 +1503,8 @@ function renderClientGames() {
     all.push({ name: g, disk });
   }));
   all.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  renderClientGenreTabs(all);
-  if (activeClientGenre !== 'Todos') all = all.filter(g => guessGenre(g.name) === activeClientGenre);
+  renderClientFilterBar(all);
+  if (activeFilters.size > 0) { all = all.filter(g => [...activeFilters].every(f => getGameTags(g.name).includes(f))); }
   const fil = q ? all.filter(g => g.name.toLowerCase().includes(q)) : all;
   if (!fil.length && !q) {
     grid.innerHTML = `<div class="empty"><i class="fas fa-compact-disc"></i><p>Catálogo de <strong>${con}</strong> próximamente.</p></div>`;
@@ -1587,6 +1529,7 @@ function renderClientGames() {
       </div>
       <div class="gc-body">
         <div class="gc-name">${hl(g.name, q)}</div>
+        <div class="gc-tags">${getGameTags(g.name).map(t=>`<span class="gtag">${t}</span>`).join('')}</div>
       </div>
     </div>`;
   }).join('');
@@ -1748,7 +1691,7 @@ Object.assign(window, {
   // Cart
   openCart, removeFromCart, clearCart, sendCartToWhatsApp, updateCartBadge,
   // Client catalog
-  renderClientConsoles, renderClientGames, setClientGenre,
+  renderClientConsoles, renderClientGames, setClientGenre, toggleFilter, clearAllFilters, renderClientFilterBar,
   // Print
   iPrint, setPCon, setPOpt, doPrint, resetPrintedList,
   // Dashboard
