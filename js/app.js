@@ -803,24 +803,41 @@ async function buscarPortadaAuto() {
   const results = document.getElementById('cover-results');
   if (status) status.textContent = '🔍 Buscando portada...';
   if (results) results.innerHTML = '';
+
   try {
-    const res = await fetch(`https://api.rawg.io/api/games?search=${encodeURIComponent(name)}&page_size=6&key=`);
-    const data = await res.json();
-    const games = (data.results || []).filter(g => g.background_image);
-    if (!games.length) {
-      if (status) status.innerHTML = '❌ No se encontró portada automática.<br/><span style="font-size:.68rem">Usa la pestaña manual.</span>';
+    // Busca en Steam (sin API key, via proxy CORS)
+    const steamRes = await fetch(
+      'https://api.allorigins.win/raw?url=' +
+      encodeURIComponent('https://store.steampowered.com/api/storesearch/?term=' + encodeURIComponent(name) + '&l=spanish&cc=US')
+    );
+    const steamData = await steamRes.json();
+    const items = (steamData.items || []).slice(0, 8).filter(i => i.id);
+    
+    if (items.length) {
+      if (status) status.textContent = items.length + ' resultado(s) — toca la portada correcta:';
+      if (results) results.innerHTML = items.map(i => {
+        const portrait = 'https://cdn.akamai.steamstatic.com/steam/apps/' + i.id + '/library_600x900.jpg';
+        const landscape = 'https://cdn.akamai.steamstatic.com/steam/apps/' + i.id + '/header.jpg';
+        return '<div class="cover-opt" onclick="selectCover('' + portrait + '','' + landscape + '')" title="' + (i.name||'').replace(/"/g,'') + '">' +
+          '<img src="' + portrait + '" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block" loading="lazy"' +
+          ' onerror="this.src='' + landscape + '';this.onerror=function(){this.closest(\'.cover-opt\').style.display=\'none\'}">' +
+          '<div style="font-size:.58rem;padding:3px 4px;background:#111;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (i.name||'') + '</div>' +
+          '</div>';
+      }).join('');
       return;
     }
-    if (status) status.textContent = `✅ ${games.length} resultado(s) — toca la portada correcta:`;
-    if (results) results.innerHTML = games.map(g =>
-      `<div class="cover-opt" onclick="selectCover('${g.background_image.replace(/'/g, "\\'")}','${(g.name || '').replace(/'/g, "\\'")}')" title="${g.name || ''}">
-        <img src="${g.background_image}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block" loading="lazy" onerror="this.parentElement.style.display='none'"/>
-        <div style="font-size:.58rem;padding:3px 4px;background:#111;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name || ''}</div>
-      </div>`).join('');
-  } catch (e) {
-    if (status) status.innerHTML = '⚠️ Error de conexión. Usa la pestaña manual.';
-  }
+  } catch(e) { /* sigue al fallback */ }
+
+  // Fallback: link a Google Imágenes
+  if (status) status.innerHTML =
+    '<div style="font-size:.76rem;line-height:1.8">' +
+    '🔍 No se encontró en Steam.<br/>' +
+    '<a href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(name + ' game cover') + '" ' +
+    'target="_blank" style="color:var(--cy)"><i class="fas fa-external-link-alt"></i> Buscar en Google Imágenes</a><br/>' +
+    '<span style="font-size:.68rem;color:var(--mu)">Descarga la imagen y súbela manualmente.</span>' +
+    '</div>';
 }
+
 async function selectCover(url) {
   const status = document.getElementById('cover-status');
   if (status) status.textContent = '⬇️ Descargando imagen...';
@@ -1445,12 +1462,34 @@ function renderClientConsoles() {
   }).join('');
 }
 
+// Palabras clave para detectar género por nombre cuando no está asignado manualmente
+const GENRE_KEYWORDS = {
+  'Acción':       ['call of duty','battlefield','doom','devil may cry','metal gear','assassin','action','gta','grand theft','shooter','far cry','resident','bayonetta','uncharted','tomb raider','batman','spider','marvel','mortal','tekken','street fighter','god of war'],
+  'Aventura':     ['adventure','zelda','horizon','red dead','witcher','cyberpunk','the last of us','days gone','ghost of','death stranding','rdr','open world','dragon age','mass effect','control','alan wake','a plague','disco elysium'],
+  'Terror':       ['horror','resident evil','silent hill','outlast','alien','amnesia','dead space','fear','evil within','visage','soma','little nightmares','layers of fear','until dawn','blair witch','doki doki','poppy playtime'],
+  'Deportes':     ['fifa','pes','nba','nhl','nfl','mlb','tennis','football','soccer','rugby','ufc','wwe','boxing','golf','motogp','f1','formula','racing','nascar','dirt','need for speed','gran turismo','forza','rocket league'],
+  'Multijugador': ['online','multiplayer','versus','pvp','battle royale','fortnite','apex','warzone','pubg','fall guys','among us','overwatch','rainbow six','siege','league of legends','valorant','minecraft','left 4 dead','borderlands','destiny','division'],
+  'RPG':          ['rpg','final fantasy','persona','tales of','dragon quest','dark souls','elden ring','sekiro','nioh','monster hunter','diablo','path of exile','kingdoms','baldur','pillars','divinity','tyranny','wasteland','fallout','oblivion','skyrim','witcher'],
+};
+
+function guessGenre(name) {
+  // Primero checar si tiene género asignado manualmente
+  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
+  const lower = name.toLowerCase();
+  for (const [genre, kws] of Object.entries(GENRE_KEYWORDS)) {
+    if (kws.some(kw => lower.includes(kw))) return genre;
+  }
+  return null; // sin género detectado
+}
+
 function renderClientGenreTabs(all) {
   const wrap = document.getElementById('client-genre-tabs');
   if (!wrap) return;
   if (!all.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-  const present = new Set(all.map(g => getGenre(g.name)));
+  // Detectar géneros presentes (manual o por keywords)
+  const present = new Set(all.map(g => guessGenre(g.name)).filter(Boolean));
   const tabs = ['Todos', ...GENRE_LIST.filter(g => present.has(g))];
+  if (tabs.length <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
   wrap.innerHTML = tabs.map(g =>
     `<div class="ctb ${activeClientGenre === g ? 'on' : ''}" onclick="setClientGenre('${escAttr(g)}')">${g}</div>`).join('');
@@ -1475,7 +1514,7 @@ function renderClientGames() {
   }));
   all.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   renderClientGenreTabs(all);
-  if (activeClientGenre !== 'Todos') all = all.filter(g => getGenre(g.name) === activeClientGenre);
+  if (activeClientGenre !== 'Todos') all = all.filter(g => guessGenre(g.name) === activeClientGenre);
   const fil = q ? all.filter(g => g.name.toLowerCase().includes(q)) : all;
   if (!fil.length && !q) {
     grid.innerHTML = `<div class="empty"><i class="fas fa-compact-disc"></i><p>Catálogo de <strong>${con}</strong> próximamente.</p></div>`;
