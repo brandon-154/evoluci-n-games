@@ -498,3 +498,6 @@ let GENRES = {
 };
 window.GDB_DEFAULT = GDB;
 window.GENRES = GENRES;
+
+// GDB_DEFAULT es la copia de referencia para Firebase (primer arranque)
+const GDB_DEFAULT = JSON.parse(JSON.stringify(GDB));

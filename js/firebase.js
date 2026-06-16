@@ -1,8 +1,11 @@
 // ═══════════════════════════════════════════════
-//  EVOLUCIÓN GAMES — Firebase Config
+//  EVOLUCIÓN GAMES B&R — Firebase v2
+//  Sincronización en tiempo real para TODOS los datos
 // ═══════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore, doc, getDoc, setDoc, onSnapshot, collection
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDT8Ji-f5zlAcXxIZ5LxeLuYb9Nm8VLId4",
@@ -16,29 +19,55 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// Carga GDB desde Firestore y lo deja global
-export async function cargarGDB() {
-  const snap = await getDoc(doc(db, "catalogo", "juegos"));
-  if (snap.exists()) {
-    window.GDB = snap.data();
-  } else {
-    // Primera vez: sube el GDB_DEFAULT que ya tienes en games.js
-    await setDoc(doc(db, "catalogo", "juegos"), window.GDB_DEFAULT);
-    window.GDB = window.GDB_DEFAULT;
+// ── Nombres de documentos en Firestore ──
+const DOCS = {
+  catalogo: ['catalogo', 'juegos'],
+  imagenes:  ['catalogo', 'imagenes'],
+  articulos: ['tienda', 'articulos'],
+  fisicos:   ['tienda', 'fisicos'],
+  reparaciones: ['servicios', 'reparaciones'],
+  guias:     ['servicios', 'guias'],
+  ingresos:  ['admin', 'ingresos'],
+  admins:    ['admin', 'admins'],
+  genres:    ['catalogo', 'genres'],
+};
+
+function ref(key) {
+  const [col, docId] = DOCS[key];
+  return doc(db, col, docId);
+}
+
+// ── Carga un documento; si no existe, lo inicializa con defaultVal ──
+export async function fbLoad(key, defaultVal) {
+  try {
+    const snap = await getDoc(ref(key));
+    if (snap.exists()) return snap.data();
+    if (defaultVal !== undefined) {
+      await setDoc(ref(key), defaultVal);
+      return defaultVal;
+    }
+    return null;
+  } catch (e) {
+    console.warn('[Firebase] fbLoad error', key, e);
+    return defaultVal ?? null;
   }
 }
 
-// Guarda GDB en Firestore (llámala cuando el admin agrega/edita/elimina)
-export async function guardarGDB() {
-  await setDoc(doc(db, "catalogo", "juegos"), window.GDB);
+// ── Guarda un documento ──
+export async function fbSave(key, data) {
+  try {
+    await setDoc(ref(key), data);
+  } catch (e) {
+    console.warn('[Firebase] fbSave error', key, e);
+    throw e;
+  }
 }
 
-// Escucha cambios en tiempo real (para clientes/empleados)
-export function escucharGDB(callback) {
-  return onSnapshot(doc(db, "catalogo", "juegos"), (snap) => {
-    if (snap.exists()) {
-      window.GDB = snap.data();
-      callback();
-    }
+// ── Escucha cambios en tiempo real ──
+export function fbListen(key, callback) {
+  return onSnapshot(ref(key), (snap) => {
+    if (snap.exists()) callback(snap.data());
+  }, (err) => {
+    console.warn('[Firebase] listener error', key, err);
   });
 }
