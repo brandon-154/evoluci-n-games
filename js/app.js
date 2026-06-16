@@ -177,27 +177,37 @@ function invalidateCache() {
 const _originalSaveAll = saveAll;
 
 async function init() {
-  const cached = readCache();
+  try {
+    const cached = readCache();
 
-  if (cached) {
-    // ── MODO RÁPIDO: datos desde caché, sin loader ──
-    applyData(cached);
+    if (cached) {
+      // ── MODO RÁPIDO: datos desde caché, sin loader ──
+      applyData(cached);
+      hideLoader();
+      if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
+      initPage();
+      // Refresca en segundo plano y arranca listeners
+      refreshFromFirebase();
+      startListeners();
+      return;
+    }
+
+    // ── PRIMERA CARGA: muestra loader, carga Firebase ──
+    showLoader('Conectando...');
+    await loadFromFirebase();
     hideLoader();
-    initPage();
     if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
-    // Refresca Firebase en segundo plano silenciosamente
-    refreshFromFirebase();
-    return;
+    initPage();
+    startListeners();
+  } catch(err) {
+    // Si Firebase falla, carga con datos por defecto para no dejar pantalla en blanco
+    console.warn('[init] Firebase error, usando datos locales:', err);
+    if (typeof window.GDB_DEFAULT !== 'undefined') window.GDB = JSON.parse(JSON.stringify(window.GDB_DEFAULT));
+    hideLoader();
+    if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
+    initPage();
+    toast('Sin conexión — mostrando datos locales', 'e');
   }
-
-  // ── PRIMERA CARGA: muestra loader, carga Firebase ──
-  showLoader('Conectando con la nube...');
-  await loadFromFirebase();
-  hideLoader();
-
-  if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
-  initPage();
-  startListeners();
 }
 
 // ── Carga todos los datos desde Firebase y guarda en caché ──
@@ -1462,17 +1472,127 @@ function renderClientConsoles() {
   }).join('');
 }
 
-// Palabras clave para detectar género por nombre cuando no está asignado manualmente
-const GENRE_KEYWORDS = {
-  'Acción':       ['call of duty','battlefield','doom','devil may cry','metal gear','assassin','action','gta','grand theft','shooter','far cry','resident','bayonetta','uncharted','tomb raider','batman','spider','marvel','mortal','tekken','street fighter','god of war'],
-  'Aventura':     ['adventure','zelda','horizon','red dead','witcher','cyberpunk','the last of us','days gone','ghost of','death stranding','rdr','open world','dragon age','mass effect','control','alan wake','a plague','disco elysium'],
-  'Terror':       ['horror','resident evil','silent hill','outlast','alien','amnesia','dead space','fear','evil within','visage','soma','little nightmares','layers of fear','until dawn','blair witch','doki doki','poppy playtime'],
-  'Deportes':     ['fifa','pes','nba','nhl','nfl','mlb','tennis','football','soccer','rugby','ufc','wwe','boxing','golf','motogp','f1','formula','racing','nascar','dirt','need for speed','gran turismo','forza','rocket league'],
-  'Multijugador': ['online','multiplayer','versus','pvp','battle royale','fortnite','apex','warzone','pubg','fall guys','among us','overwatch','rainbow six','siege','league of legends','valorant','minecraft','left 4 dead','borderlands','destiny','division'],
-  'RPG':          ['rpg','final fantasy','persona','tales of','dragon quest','dark souls','elden ring','sekiro','nioh','monster hunter','diablo','path of exile','kingdoms','baldur','pillars','divinity','tyranny','wasteland','fallout','oblivion','skyrim','witcher'],
+// Base de datos de géneros — incluye juegos populares de PS4/PS5/PS3/Switch y más
+const GAME_GENRES = {
+  // ── ACCIÓN ──
+  'Acción': [
+    'call of duty','battlefield','doom','metal gear','assassin','devil may cry','bayonetta',
+    'god of war','batman','spider-man','marvel','mortal kombat','tekken','street fighter',
+    'gta','grand theft auto','far cry','just cause','saints row','mafia','watch dogs',
+    'sekiro','nioh','ghostrunner','sifu','returnal','outriders','control','atomic heart',
+    'uncharted','tomb raider','shadow of the tomb','prince of persia','dishonored',
+    'prey','deus ex','wolfenstein','titanfall','apex','vanquish','mgs','metal gear solid',
+    'gravity rush','infamous','sunset overdrive','ratchet','jak and daxter','crash bandicoot',
+    'sonic','mega man','castlevania','contra','gungeon','cuphead','hollow knight',
+    'hades','dead cells','ori','celeste','shovel knight','bloodborne','lies of p',
+    'black myth','stellar blade','rise of the ronin','wild hearts','wo long',
+    'ghost of tsushima','legends','aragami','ninjala','katana zero',
+  ],
+  // ── AVENTURA ──
+  'Aventura': [
+    'zelda','horizon','red dead','witcher','cyberpunk','last of us','days gone',
+    'ghost of tsushima','death stranding','rdr','open world','control','alan wake',
+    'plague tale','disco elysium','outer worlds','prey','bioshock','system shock',
+    'subnautica','no man sky','astroneer','firewatch','oxenfree','edith finch',
+    'life is strange','detroit become human','heavy rain','beyond two souls',
+    'until dawn','man of medan','little hope','house of ashes','the quarry',
+    'adventure','a hat in time','yooka-laylee','psychonauts','banjo',
+    'spyro','crash','jak','ratchet clank','sly cooper','medievil',
+    'ico','shadow of the colossus','journey','abzu','flower','bound',
+    'gris','spiritfarer','stardew','animal crossing','botw','tears of the kingdom',
+    'pokemon','pikachu','eevee','kirby','yoshi','captain toad',
+    'luigi mansion','super mario','odyssey','sunshine','galaxy','3d world',
+    'littlebigplanet','sackboy','knack','astro','astro bot',
+    'kena','bridge of spirits','arise','tales from the borderlands',
+    'minit','toem','unpacking','please don't touch','donut county',
+  ],
+  // ── TERROR ──
+  'Terror': [
+    'resident evil','re ','silent hill','outlast','alien isolation','amnesia',
+    'dead space','fear','evil within','visage','soma','little nightmares',
+    'layers of fear','until dawn','blair witch','doki doki','poppy playtime',
+    'fnaf','five nights','bendy','granny','slender','phasmophobia',
+    'horror','survival horror','fatal frame','project zero','forbidden siren',
+    'rule of rose','haunting ground','obscure','condemned','condemned',
+    'the forest','sons of the forest','the long dark','green hell','subnautica below',
+    'darkwood','carrion','control scp','hello neighbor','daymare','remothered',
+    'signalis','tormented souls','crow country','still wakes the deep',
+    'alan wake 2','alan wake2','suicide of wilford','madison','pamela',
+    'decarnation','faith','dread x','scorn','mouthwashing','back rooms',
+    'infliction','wraith','the shore','pamela','observation','close to the sun',
+  ],
+  // ── DEPORTES ──
+  'Deportes': [
+    'fifa','fc ','fc24','fc25','pes','efootball','nba','nhl','nfl','mlb','ncaa',
+    'tennis','football','soccer','rugby','ufc','wwe','boxing','golf','motogp',
+    'f1','formula 1','formula1','racing','nascar','dirt','need for speed','nfs',
+    'gran turismo','forza','rocket league','gang beasts','nba 2k','madden',
+    'tony hawk','skater xl','session','riders republic','steep','descenders',
+    'pga tour','top spin','mario tennis','mario golf','mario strikers',
+    'nintendo switch sports','wii sports','sportsmashup','sports party',
+    'olympic','winter sports','extreme sports','bmx','skateboarding',
+    'snowboarding','surfing','triathlon','table tennis','ping pong','badminton',
+    'baseball','basketball','american football','handball','volleyball',
+    '2k23','2k24','2k25','nba2k','nba 2k23','nba 2k24','nba 2k25',
+  ],
+  // ── MULTIJUGADOR / CO-OP ──
+  'Multijugador': [
+    'online','multiplayer','pvp','battle royale','fortnite','apex legends',
+    'warzone','pubg','fall guys','among us','overwatch','rainbow six','siege',
+    'league of legends','valorant','minecraft','left 4 dead','l4d',
+    'borderlands','destiny','division','outriders','deep rock','back 4 blood',
+    'it takes two','a way out','hazelight','lovers in a dangerous','human fall flat',
+    'gang beasts','moving out','overcooked','tools up','cooking mama',
+    'party animals','pummel party','brawlhalla','multiversus','nickelodeon',
+    'minecraft dungeons','diablo','poe','path of exile','torchlight',
+    'helldivers','remnant','outriders','returnal','nioh','stranger of paradise',
+    'resident evil 5','resident evil 6','dying light','dayz','rust',
+    'ark','conan','atlas','no man sky','valheim','grounded',
+    'lego','lego marvel','lego star wars','lego harry potter','lego batman',
+    'lego jurassic','lego city','lego avengers','lego ninjago',
+    'sackboy','astro','kirby','mario party','mario kart','smash bros',
+    'super smash','crash team','crash bandicoot racing','team sonic',
+    'dnf duel','guilty gear','dragon ball fighterz','dragon ball sparking',
+    'naruto','naruto ultimate ninja','one piece','my hero academia',
+    'dragon ball','dbz','dbfz','jjk','chainsaw man','demon slayer',
+    'co-op','coop','4 player','2 player','local multiplayer','split screen',
+    'splitscreen','couch','familia','amigos','friends','together',
+  ],
+  // ── RPG ──
+  'RPG': [
+    'rpg','final fantasy','persona','tales of','dragon quest','dark souls',
+    'elden ring','sekiro','nioh','monster hunter','diablo','path of exile',
+    'baldur','pillars','divinity','tyranny','wasteland','fallout','oblivion',
+    'skyrim','witcher','cyberpunk','outer worlds','mass effect','dragon age',
+    'kingdoms of amalur','greedfall','the surge','star wars jedi','jedi fallen',
+    'jedi survivor','kingdoms','kingdom hearts','ff7','ff15','ff16','ffvii',
+    'stranger of paradise','octopath','triangle strategy','fire emblem',
+    'xenoblade','xenogears','chrono','bravely default','bravely second',
+    'ni no kuni','blue dragon','lost odyssey','eternal sonata',
+    'valkyria chronicles','star ocean','evolution','tales','arise',
+    'graces','vesperia','symphonia','berseria','zestiria',
+    'dragon ball xenoverse','naruto storm','one piece odyssey',
+    'pokemon legends','pokemon sword','pokemon scarlet','pokemon violet',
+    'digimon','yo-kai watch','atelier','ryza','sophie','lydie',
+    'mana','legend of mana','trials of mana','secret of mana',
+    'ys','ys viii','ys ix','ys x','falcom','crossbell','trails',
+    'the legend of heroes','cold steel','trails of cold steel',
+  ],
 };
 
+// Detectar género por nombre del juego
 function guessGenre(name) {
+  // 1. Checar si tiene género asignado manualmente en Firebase
+  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
+  const lower = name.toLowerCase();
+  // 2. Buscar en la base de datos de géneros
+  for (const [genre, keywords] of Object.entries(GAME_GENRES)) {
+    if (keywords.some(kw => lower.includes(kw))) return genre;
+  }
+  return null;
+}
+
+
   // Primero checar si tiene género asignado manualmente
   if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
   const lower = name.toLowerCase();
