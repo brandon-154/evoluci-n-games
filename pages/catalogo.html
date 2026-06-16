@@ -100,16 +100,22 @@
     <div class="fi"><label>Disco duro</label>
       <select id="ag-d" onchange="onAgDiskChange()"></select>
     </div>
-    <div class="fi"><label>Género (para el filtro del catálogo de clientes)</label>
-      <select id="ag-genre">
-        <option value="">Sin clasificar</option>
-        <option value="Aventura">Aventura</option>
-        <option value="Acción">Acción</option>
-        <option value="Terror">Terror</option>
-        <option value="Deportes">Deportes</option>
-        <option value="Multijugador">Multijugador</option>
-        <option value="RPG">RPG</option>
-      </select>
+    <div class="fi">
+      <label>Géneros <span style="font-size:.65rem;color:var(--mu);font-weight:400">(podés elegir varios)</span></label>
+      <div id="ag-genre-checks" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+        <label class="gcheck"><input type="checkbox" value="Aventura"/> Aventura</label>
+        <label class="gcheck"><input type="checkbox" value="Acción"/> Acción</label>
+        <label class="gcheck"><input type="checkbox" value="Terror"/> Terror</label>
+        <label class="gcheck"><input type="checkbox" value="Deportes"/> Deportes</label>
+        <label class="gcheck"><input type="checkbox" value="Multijugador"/> Multijugador</label>
+        <label class="gcheck"><input type="checkbox" value="RPG"/> RPG</label>
+        <label class="gcheck"><input type="checkbox" value="2 Jugadores"/> 2 Jugadores</label>
+        <label class="gcheck"><input type="checkbox" value="4 Jugadores"/> 4 Jugadores</label>
+        <label class="gcheck"><input type="checkbox" value="Familia"/> Familia</label>
+        <label class="gcheck"><input type="checkbox" value="Infantil"/> Infantil</label>
+        <label class="gcheck"><input type="checkbox" value="Simulación"/> Simulación</label>
+        <label class="gcheck"><input type="checkbox" value="Estrategia"/> Estrategia</label>
+      </div>
     </div>
     <div class="fi"><label>Imagen de portada</label>
       <!-- Pestañas -->
