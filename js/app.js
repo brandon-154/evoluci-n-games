@@ -177,37 +177,27 @@ function invalidateCache() {
 const _originalSaveAll = saveAll;
 
 async function init() {
-  try {
-    const cached = readCache();
+  const cached = readCache();
 
-    if (cached) {
-      // ── MODO RÁPIDO: datos desde caché, sin loader ──
-      applyData(cached);
-      hideLoader();
-      if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
-      initPage();
-      // Refresca en segundo plano y arranca listeners
-      refreshFromFirebase();
-      startListeners();
-      return;
-    }
-
-    // ── PRIMERA CARGA: muestra loader, carga Firebase ──
-    showLoader('Conectando...');
-    await loadFromFirebase();
+  if (cached) {
+    // ── MODO RÁPIDO: datos desde caché, sin loader ──
+    applyData(cached);
     hideLoader();
-    if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
     initPage();
-    startListeners();
-  } catch(err) {
-    // Si Firebase falla, carga con datos por defecto para no dejar pantalla en blanco
-    console.warn('[init] Firebase error, usando datos locales:', err);
-    if (typeof window.GDB_DEFAULT !== 'undefined') window.GDB = JSON.parse(JSON.stringify(window.GDB_DEFAULT));
-    hideLoader();
     if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
-    initPage();
-    toast('Sin conexión — mostrando datos locales', 'e');
+    // Refresca Firebase en segundo plano silenciosamente
+    refreshFromFirebase();
+    return;
   }
+
+  // ── PRIMERA CARGA: muestra loader, carga Firebase ──
+  showLoader('Conectando con la nube...');
+  await loadFromFirebase();
+  hideLoader();
+
+  if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
+  initPage();
+  startListeners();
 }
 
 // ── Carga todos los datos desde Firebase y guarda en caché ──
@@ -813,41 +803,24 @@ async function buscarPortadaAuto() {
   const results = document.getElementById('cover-results');
   if (status) status.textContent = '🔍 Buscando portada...';
   if (results) results.innerHTML = '';
-
   try {
-    // Busca en Steam (sin API key, via proxy CORS)
-    const steamRes = await fetch(
-      'https://api.allorigins.win/raw?url=' +
-      encodeURIComponent('https://store.steampowered.com/api/storesearch/?term=' + encodeURIComponent(name) + '&l=spanish&cc=US')
-    );
-    const steamData = await steamRes.json();
-    const items = (steamData.items || []).slice(0, 8).filter(i => i.id);
-    
-    if (items.length) {
-      if (status) status.textContent = items.length + ' resultado(s) — toca la portada correcta:';
-      if (results) results.innerHTML = items.map(i => {
-        const portrait = 'https://cdn.akamai.steamstatic.com/steam/apps/' + i.id + '/library_600x900.jpg';
-        const landscape = 'https://cdn.akamai.steamstatic.com/steam/apps/' + i.id + '/header.jpg';
-        return '<div class="cover-opt" onclick="selectCover('' + portrait + '','' + landscape + '')" title="' + (i.name||'').replace(/"/g,'') + '">' +
-          '<img src="' + portrait + '" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block" loading="lazy"' +
-          ' onerror="this.src='' + landscape + '';this.onerror=function(){this.closest(\'.cover-opt\').style.display=\'none\'}">' +
-          '<div style="font-size:.58rem;padding:3px 4px;background:#111;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (i.name||'') + '</div>' +
-          '</div>';
-      }).join('');
+    const res = await fetch(`https://api.rawg.io/api/games?search=${encodeURIComponent(name)}&page_size=6&key=`);
+    const data = await res.json();
+    const games = (data.results || []).filter(g => g.background_image);
+    if (!games.length) {
+      if (status) status.innerHTML = '❌ No se encontró portada automática.<br/><span style="font-size:.68rem">Usa la pestaña manual.</span>';
       return;
     }
-  } catch(e) { /* sigue al fallback */ }
-
-  // Fallback: link a Google Imágenes
-  if (status) status.innerHTML =
-    '<div style="font-size:.76rem;line-height:1.8">' +
-    '🔍 No se encontró en Steam.<br/>' +
-    '<a href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(name + ' game cover') + '" ' +
-    'target="_blank" style="color:var(--cy)"><i class="fas fa-external-link-alt"></i> Buscar en Google Imágenes</a><br/>' +
-    '<span style="font-size:.68rem;color:var(--mu)">Descarga la imagen y súbela manualmente.</span>' +
-    '</div>';
+    if (status) status.textContent = `✅ ${games.length} resultado(s) — toca la portada correcta:`;
+    if (results) results.innerHTML = games.map(g =>
+      `<div class="cover-opt" onclick="selectCover('${g.background_image.replace(/'/g, "\\'")}','${(g.name || '').replace(/'/g, "\\'")}')" title="${g.name || ''}">
+        <img src="${g.background_image}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block" loading="lazy" onerror="this.parentElement.style.display='none'"/>
+        <div style="font-size:.58rem;padding:3px 4px;background:#111;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name || ''}</div>
+      </div>`).join('');
+  } catch (e) {
+    if (status) status.innerHTML = '⚠️ Error de conexión. Usa la pestaña manual.';
+  }
 }
-
 async function selectCover(url) {
   const status = document.getElementById('cover-status');
   if (status) status.textContent = '⬇️ Descargando imagen...';
@@ -1472,144 +1445,12 @@ function renderClientConsoles() {
   }).join('');
 }
 
-// Base de datos de géneros — incluye juegos populares de PS4/PS5/PS3/Switch y más
-const GAME_GENRES = {
-  // ── ACCIÓN ──
-  'Acción': [
-    'call of duty','battlefield','doom','metal gear','assassin','devil may cry','bayonetta',
-    'god of war','batman','spider-man','marvel','mortal kombat','tekken','street fighter',
-    'gta','grand theft auto','far cry','just cause','saints row','mafia','watch dogs',
-    'sekiro','nioh','ghostrunner','sifu','returnal','outriders','control','atomic heart',
-    'uncharted','tomb raider','shadow of the tomb','prince of persia','dishonored',
-    'prey','deus ex','wolfenstein','titanfall','apex','vanquish','mgs','metal gear solid',
-    'gravity rush','infamous','sunset overdrive','ratchet','jak and daxter','crash bandicoot',
-    'sonic','mega man','castlevania','contra','gungeon','cuphead','hollow knight',
-    'hades','dead cells','ori','celeste','shovel knight','bloodborne','lies of p',
-    'black myth','stellar blade','rise of the ronin','wild hearts','wo long',
-    'ghost of tsushima','legends','aragami','ninjala','katana zero',
-  ],
-  // ── AVENTURA ──
-  'Aventura': [
-    'zelda','horizon','red dead','witcher','cyberpunk','last of us','days gone',
-    'ghost of tsushima','death stranding','rdr','open world','control','alan wake',
-    'plague tale','disco elysium','outer worlds','prey','bioshock','system shock',
-    'subnautica','no man sky','astroneer','firewatch','oxenfree','edith finch',
-    'life is strange','detroit become human','heavy rain','beyond two souls',
-    'until dawn','man of medan','little hope','house of ashes','the quarry',
-    'adventure','a hat in time','yooka-laylee','psychonauts','banjo',
-    'spyro','crash','jak','ratchet clank','sly cooper','medievil',
-    'ico','shadow of the colossus','journey','abzu','flower','bound',
-    'gris','spiritfarer','stardew','animal crossing','botw','tears of the kingdom',
-    'pokemon','pikachu','eevee','kirby','yoshi','captain toad',
-    'luigi mansion','super mario','odyssey','sunshine','galaxy','3d world',
-    'littlebigplanet','sackboy','knack','astro','astro bot',
-    'kena','bridge of spirits','arise','tales from the borderlands',
-    'minit','toem','unpacking','please don't touch','donut county',
-  ],
-  // ── TERROR ──
-  'Terror': [
-    'resident evil','re ','silent hill','outlast','alien isolation','amnesia',
-    'dead space','fear','evil within','visage','soma','little nightmares',
-    'layers of fear','until dawn','blair witch','doki doki','poppy playtime',
-    'fnaf','five nights','bendy','granny','slender','phasmophobia',
-    'horror','survival horror','fatal frame','project zero','forbidden siren',
-    'rule of rose','haunting ground','obscure','condemned','condemned',
-    'the forest','sons of the forest','the long dark','green hell','subnautica below',
-    'darkwood','carrion','control scp','hello neighbor','daymare','remothered',
-    'signalis','tormented souls','crow country','still wakes the deep',
-    'alan wake 2','alan wake2','suicide of wilford','madison','pamela',
-    'decarnation','faith','dread x','scorn','mouthwashing','back rooms',
-    'infliction','wraith','the shore','pamela','observation','close to the sun',
-  ],
-  // ── DEPORTES ──
-  'Deportes': [
-    'fifa','fc ','fc24','fc25','pes','efootball','nba','nhl','nfl','mlb','ncaa',
-    'tennis','football','soccer','rugby','ufc','wwe','boxing','golf','motogp',
-    'f1','formula 1','formula1','racing','nascar','dirt','need for speed','nfs',
-    'gran turismo','forza','rocket league','gang beasts','nba 2k','madden',
-    'tony hawk','skater xl','session','riders republic','steep','descenders',
-    'pga tour','top spin','mario tennis','mario golf','mario strikers',
-    'nintendo switch sports','wii sports','sportsmashup','sports party',
-    'olympic','winter sports','extreme sports','bmx','skateboarding',
-    'snowboarding','surfing','triathlon','table tennis','ping pong','badminton',
-    'baseball','basketball','american football','handball','volleyball',
-    '2k23','2k24','2k25','nba2k','nba 2k23','nba 2k24','nba 2k25',
-  ],
-  // ── MULTIJUGADOR / CO-OP ──
-  'Multijugador': [
-    'online','multiplayer','pvp','battle royale','fortnite','apex legends',
-    'warzone','pubg','fall guys','among us','overwatch','rainbow six','siege',
-    'league of legends','valorant','minecraft','left 4 dead','l4d',
-    'borderlands','destiny','division','outriders','deep rock','back 4 blood',
-    'it takes two','a way out','hazelight','lovers in a dangerous','human fall flat',
-    'gang beasts','moving out','overcooked','tools up','cooking mama',
-    'party animals','pummel party','brawlhalla','multiversus','nickelodeon',
-    'minecraft dungeons','diablo','poe','path of exile','torchlight',
-    'helldivers','remnant','outriders','returnal','nioh','stranger of paradise',
-    'resident evil 5','resident evil 6','dying light','dayz','rust',
-    'ark','conan','atlas','no man sky','valheim','grounded',
-    'lego','lego marvel','lego star wars','lego harry potter','lego batman',
-    'lego jurassic','lego city','lego avengers','lego ninjago',
-    'sackboy','astro','kirby','mario party','mario kart','smash bros',
-    'super smash','crash team','crash bandicoot racing','team sonic',
-    'dnf duel','guilty gear','dragon ball fighterz','dragon ball sparking',
-    'naruto','naruto ultimate ninja','one piece','my hero academia',
-    'dragon ball','dbz','dbfz','jjk','chainsaw man','demon slayer',
-    'co-op','coop','4 player','2 player','local multiplayer','split screen',
-    'splitscreen','couch','familia','amigos','friends','together',
-  ],
-  // ── RPG ──
-  'RPG': [
-    'rpg','final fantasy','persona','tales of','dragon quest','dark souls',
-    'elden ring','sekiro','nioh','monster hunter','diablo','path of exile',
-    'baldur','pillars','divinity','tyranny','wasteland','fallout','oblivion',
-    'skyrim','witcher','cyberpunk','outer worlds','mass effect','dragon age',
-    'kingdoms of amalur','greedfall','the surge','star wars jedi','jedi fallen',
-    'jedi survivor','kingdoms','kingdom hearts','ff7','ff15','ff16','ffvii',
-    'stranger of paradise','octopath','triangle strategy','fire emblem',
-    'xenoblade','xenogears','chrono','bravely default','bravely second',
-    'ni no kuni','blue dragon','lost odyssey','eternal sonata',
-    'valkyria chronicles','star ocean','evolution','tales','arise',
-    'graces','vesperia','symphonia','berseria','zestiria',
-    'dragon ball xenoverse','naruto storm','one piece odyssey',
-    'pokemon legends','pokemon sword','pokemon scarlet','pokemon violet',
-    'digimon','yo-kai watch','atelier','ryza','sophie','lydie',
-    'mana','legend of mana','trials of mana','secret of mana',
-    'ys','ys viii','ys ix','ys x','falcom','crossbell','trails',
-    'the legend of heroes','cold steel','trails of cold steel',
-  ],
-};
-
-// Detectar género por nombre del juego
-function guessGenre(name) {
-  // 1. Checar si tiene género asignado manualmente en Firebase
-  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
-  const lower = name.toLowerCase();
-  // 2. Buscar en la base de datos de géneros
-  for (const [genre, keywords] of Object.entries(GAME_GENRES)) {
-    if (keywords.some(kw => lower.includes(kw))) return genre;
-  }
-  return null;
-}
-
-
-  // Primero checar si tiene género asignado manualmente
-  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
-  const lower = name.toLowerCase();
-  for (const [genre, kws] of Object.entries(GENRE_KEYWORDS)) {
-    if (kws.some(kw => lower.includes(kw))) return genre;
-  }
-  return null; // sin género detectado
-}
-
 function renderClientGenreTabs(all) {
   const wrap = document.getElementById('client-genre-tabs');
   if (!wrap) return;
   if (!all.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-  // Detectar géneros presentes (manual o por keywords)
-  const present = new Set(all.map(g => guessGenre(g.name)).filter(Boolean));
+  const present = new Set(all.map(g => getGenre(g.name)));
   const tabs = ['Todos', ...GENRE_LIST.filter(g => present.has(g))];
-  if (tabs.length <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
   wrap.innerHTML = tabs.map(g =>
     `<div class="ctb ${activeClientGenre === g ? 'on' : ''}" onclick="setClientGenre('${escAttr(g)}')">${g}</div>`).join('');
@@ -1634,7 +1475,7 @@ function renderClientGames() {
   }));
   all.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   renderClientGenreTabs(all);
-  if (activeClientGenre !== 'Todos') all = all.filter(g => guessGenre(g.name) === activeClientGenre);
+  if (activeClientGenre !== 'Todos') all = all.filter(g => getGenre(g.name) === activeClientGenre);
   const fil = q ? all.filter(g => g.name.toLowerCase().includes(q)) : all;
   if (!fil.length && !q) {
     grid.innerHTML = `<div class="empty"><i class="fas fa-compact-disc"></i><p>Catálogo de <strong>${con}</strong> próximamente.</p></div>`;
