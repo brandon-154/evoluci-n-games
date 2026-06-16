@@ -475,7 +475,93 @@ function cIco(c) {
   return 'fab fa-xbox';
 }
 
+// ── Base de datos de géneros por palabras clave ──
+const GAME_GENRES = {
+  'Acción': [
+    'call of duty','battlefield','doom','metal gear','assassin','devil may cry',
+    'god of war','batman','spider-man','marvel','mortal kombat','tekken','street fighter',
+    'gta','grand theft auto','far cry','just cause','saints row','mafia','watch dogs',
+    'sekiro','nioh','ghostrunner','sifu','returnal','control','atomic heart','wolfenstein',
+    'uncharted','tomb raider','prince of persia','dishonored','gravity rush','infamous',
+    'ratchet','crash bandicoot','sonic','mega man','castlevania','cuphead','hollow knight',
+    'hades','dead cells','bloodborne','lies of p','black myth','stellar blade',
+    'ghost of tsushima','aragami','katana zero','bayonetta','vanquish',
+    'rise of the ronin','wild hearts','wo long','stranger of paradise',
+  ],
+  'Aventura': [
+    'zelda','horizon','red dead','witcher','cyberpunk','last of us','days gone',
+    'ghost of tsushima','death stranding','alan wake','plague tale',
+    'disco elysium','outer worlds','bioshock','subnautica','no man sky',
+    'firewatch','life is strange','detroit become human','heavy rain','beyond two souls',
+    'until dawn','man of medan','little hope','house of ashes','the quarry',
+    'a hat in time','psychonauts','spyro','sly cooper','medievil',
+    'shadow of the colossus','journey','abzu','gris','spiritfarer','stardew',
+    'kena','astro bot','astro playroom','littlebigplanet','sackboy','knack',
+    'toem','unpacking','donut county','rdr2','red dead redemption',
+    'pokemon','kirby','yoshi','captain toad','luigi mansion',
+    'mario odyssey','mario galaxy','3d world','super mario','mario sunshine',
+  ],
+  'Terror': [
+    'resident evil','re2','re3','re4','re7','re8','re village','silent hill',
+    'outlast','alien isolation','amnesia','dead space','evil within','visage',
+    'soma','little nightmares','layers of fear','blair witch','poppy playtime',
+    'fnaf','five nights','bendy','phasmophobia','horror','survival horror',
+    'fatal frame','project zero','darkwood','carrion','signalis','tormented souls',
+    'crow country','still wakes the deep','alan wake 2','madison','scorn',
+    'the forest','sons of the forest','green hell','daymare','remothered',
+    'observer','close to the sun','doki doki','hello neighbor','granny',
+    'dying light','daylight','outlast trials',
+  ],
+  'Deportes': [
+    'fifa','fc 24','fc 25','fc24','fc25','pes','efootball',
+    'nba','nhl','nfl','mlb','ufc','wwe','boxing','golf','motogp',
+    'f1 ','formula 1','formula1','racing','nascar','dirt',
+    'need for speed','nfs','gran turismo','forza','rocket league',
+    'tony hawk','skater xl','riders republic','steep','pga tour','top spin',
+    'mario tennis','mario golf','mario strikers','switch sports','wii sports',
+    'nba 2k','nba2k','madden','mlb the show','tennis world tour',
+  ],
+  'Multijugador': [
+    'fortnite','apex legends','warzone','pubg','fall guys','among us',
+    'overwatch','rainbow six','siege','minecraft','left 4 dead',
+    'borderlands','destiny','division','outriders','deep rock','back 4 blood',
+    'it takes two','a way out','human fall flat','gang beasts','moving out',
+    'overcooked','tools up','party animals','pummel party','brawlhalla','multiversus',
+    'lego marvel','lego star wars','lego harry','lego batman','lego jurassic',
+    'lego avengers','lego city','lego ninjago','lego ',
+    'mario party','mario kart','smash bros','super smash',
+    'crash team','team sonic','naruto ultimate','dragon ball fighterz',
+    'dragon ball sparking','my hero academia','demon slayer','jujutsu',
+    'dbfz','naruto storm','helldivers','remnant','grounded','valheim',
+    'sackboy','kirby forgotten','kirby dream','kirby return',
+  ],
+  'RPG': [
+    'final fantasy','ff7','ff15','ff16','ffvii','ffxv','ffxvi',
+    'persona','tales of','dragon quest','dark souls','elden ring',
+    'monster hunter','diablo','baldur','divinity','fallout','skyrim',
+    'cyberpunk','outer worlds','mass effect','dragon age',
+    'jedi fallen','jedi survivor','kingdom hearts',
+    'stranger of paradise','octopath','triangle strategy','fire emblem',
+    'xenoblade','ni no kuni','atelier','ryza','trails','cold steel',
+    'ys viii','ys ix','legend of heroes','greedfall','star ocean',
+    'tales of arise','tales of berseria','tales of vesperia',
+    'dragon ball xenoverse','xenoverse','one piece odyssey',
+    'pokemon legends','pokemon sword','pokemon scarlet','pokemon violet',
+    'digimon','legend of mana','secret of mana','trials of mana',
+    'valkyria chronicles','bravely default','lost odyssey',
+  ],
+};
+
 function getGenre(name) { return GENRES[name] || 'Sin clasificar'; }
+
+function guessGenre(name) {
+  if (GENRES[name] && GENRES[name] !== 'Sin clasificar') return GENRES[name];
+  const lower = name.toLowerCase();
+  for (const [genre, kws] of Object.entries(GAME_GENRES)) {
+    if (kws.some(kw => lower.includes(kw))) return genre;
+  }
+  return null;
+}
 
 /* ────────────────────────────────────────────
    CATÁLOGO ADMIN
@@ -1449,8 +1535,9 @@ function renderClientGenreTabs(all) {
   const wrap = document.getElementById('client-genre-tabs');
   if (!wrap) return;
   if (!all.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-  const present = new Set(all.map(g => getGenre(g.name)));
+  const present = new Set(all.map(g => guessGenre(g.name)).filter(Boolean));
   const tabs = ['Todos', ...GENRE_LIST.filter(g => present.has(g))];
+  if (tabs.length <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
   wrap.innerHTML = tabs.map(g =>
     `<div class="ctb ${activeClientGenre === g ? 'on' : ''}" onclick="setClientGenre('${escAttr(g)}')">${g}</div>`).join('');
@@ -1475,7 +1562,7 @@ function renderClientGames() {
   }));
   all.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   renderClientGenreTabs(all);
-  if (activeClientGenre !== 'Todos') all = all.filter(g => getGenre(g.name) === activeClientGenre);
+  if (activeClientGenre !== 'Todos') all = all.filter(g => guessGenre(g.name) === activeClientGenre);
   const fil = q ? all.filter(g => g.name.toLowerCase().includes(q)) : all;
   if (!fil.length && !q) {
     grid.innerHTML = `<div class="empty"><i class="fas fa-compact-disc"></i><p>Catálogo de <strong>${con}</strong> próximamente.</p></div>`;
