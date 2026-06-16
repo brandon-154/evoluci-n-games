@@ -785,7 +785,7 @@ function openAddGame() {
   document.getElementById('ag-ico').className = 'fas fa-plus';
   document.getElementById('ag-n').value = '';
   document.getElementById('ag-c').value = aCon;
-  document.querySelectorAll('#ag-genre-checks input').forEach(cb => cb.checked = false);
+  document.getElementById('ag-genre').value = '';
   refreshDiskOptions(aCon, aDisk !== 'Todos' ? aDisk : null);
   resetCoverTabs();
   oMod('m-ag');
@@ -797,10 +797,7 @@ function editGame(con, disk, name) {
   document.getElementById('ag-ico').className = 'fas fa-pen';
   document.getElementById('ag-n').value = name;
   document.getElementById('ag-c').value = con;
-  const _editGenres = getGenres(name);
-  document.querySelectorAll('#ag-genre-checks input').forEach(cb => {
-    cb.checked = _editGenres.includes(cb.value);
-  });
+  document.getElementById('ag-genre').value = GENRES[name] || '';
   refreshDiskOptions(con, disk);
   resetCoverTabs();
   const img = GIMGS[con + '::' + name] || '';
@@ -816,8 +813,7 @@ function saveGame() {
   const con = document.getElementById('ag-c')?.value;
   const disk = document.getElementById('ag-d')?.value;
   const img = document.getElementById('ag-img-b64')?.value;
-  const genreChecks = document.querySelectorAll('#ag-genre-checks input:checked');
-  const genre = Array.from(genreChecks).map(c => c.value);
+  const genre = document.getElementById('ag-genre')?.value;
   if (!newName) { toast('Escribe el nombre del juego', 'e'); return; }
   if (!con || !disk || disk === '__new__') { toast('Selecciona un disco válido', 'e'); return; }
   if (!window.GDB[con]) window.GDB[con] = {};
@@ -839,7 +835,7 @@ function saveGame() {
 
   if (!window.GDB[con][disk].includes(newName)) window.GDB[con][disk].push(newName);
   if (img) GIMGS[con + '::' + newName] = img;
-  if (genre.length) GENRES[newName] = genre; else delete GENRES[newName];
+  if (genre) GENRES[newName] = genre; else delete GENRES[newName];
 
   save();
   cMod('m-ag');
@@ -1539,8 +1535,7 @@ function renderClientGenreTabs(all) {
   const wrap = document.getElementById('client-genre-tabs');
   if (!wrap) return;
   if (!all.length) { wrap.innerHTML = ''; wrap.style.display = 'none'; return; }
-  const present = new Set();
-  all.forEach(g => getGenres(g.name).forEach(genre => present.add(genre)));
+  const present = new Set(all.map(g => guessGenre(g.name)).filter(Boolean));
   const tabs = ['Todos', ...GENRE_LIST.filter(g => present.has(g))];
   if (tabs.length <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
@@ -1567,7 +1562,7 @@ function renderClientGames() {
   }));
   all.sort((a, b) => a.name.localeCompare(b.name, 'es'));
   renderClientGenreTabs(all);
-  if (activeClientGenre !== 'Todos') all = all.filter(g => hasGenre(g.name, activeClientGenre));
+  if (activeClientGenre !== 'Todos') all = all.filter(g => guessGenre(g.name) === activeClientGenre);
   const fil = q ? all.filter(g => g.name.toLowerCase().includes(q)) : all;
   if (!fil.length && !q) {
     grid.innerHTML = `<div class="empty"><i class="fas fa-compact-disc"></i><p>Catálogo de <strong>${con}</strong> próximamente.</p></div>`;

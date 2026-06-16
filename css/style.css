@@ -600,20 +600,3 @@ html.light .gc-ph,html.light .ac-ph{background:var(--sur2)}
   .ov{align-items:flex-end;padding:0}
   @keyframes mIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 }
-
-/* ── Multi-genre checkboxes ── */
-.gcheck {
-  display:flex;align-items:center;gap:6px;
-  padding:5px 12px;border-radius:99px;
-  border:1px solid var(--brd);cursor:pointer;
-  font-size:.75rem;color:var(--mu);
-  transition:all .18s;user-select:none;
-}
-.gcheck:hover { border-color:var(--cy);color:var(--cy); }
-.gcheck input { display:none; }
-.gcheck:has(input:checked) {
-  background:rgba(0,212,255,.12);
-  border-color:var(--cy);
-  color:var(--cy);
-  font-weight:600;
-}
