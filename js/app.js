@@ -70,15 +70,6 @@ const DEFAULT_GUIDES = [
 ];
 
 const GENRE_LIST = ['Aventura', 'Acción', 'Terror', 'Deportes', 'Multijugador', 'RPG'];
-const CONSOLE_ORDER = ['PS4', 'PS5', 'PS3', 'Switch', 'PSP', 'PSVita', 'PS2', 'Xbox360', 'Wii'];
-function orderedConsoles() {
-  const keys = orderedConsoles();
-  return [
-    ...CONSOLE_ORDER.filter(c => keys.includes(c)),
-    ...keys.filter(c => !CONSOLE_ORDER.includes(c))
-  ];
-}
-
 const WHATSAPP_NUMBERS = {
   principal: '59160110595',
   papa: '59170000001'
@@ -484,7 +475,7 @@ function getGenre(name) { return GENRES[name] || 'Sin clasificar'; }
 function iCat() {
   const tabs = document.getElementById('ctabs');
   if (!tabs) return;
-  tabs.innerHTML = orderedConsoles().map(c => {
+  tabs.innerHTML = Object.keys(window.GDB).map(c => {
     const n = Object.values(window.GDB[c] || {}).flat().length;
     return `<div class="ctab ${c === aCon ? 'on' : ''}" onclick="setCon('${c}')">
       <i class="${cIco(c)}"></i> ${c}${n ? `<span class="cn">${n}</span>` : ''}
@@ -1435,7 +1426,7 @@ function sendCartToWhatsApp(target = 'principal') {
 function renderClientConsoles() {
   const grid = document.getElementById('client-console-grid');
   if (!grid) return;
-  grid.innerHTML = orderedConsoles().map(c => {
+  grid.innerHTML = Object.keys(window.GDB).map(c => {
     const n = Object.values(window.GDB[c] || {}).flat().length;
     const disabled = n === 0;
     return `<a href="cliente-catalogo.html?con=${c}" class="ccon-card ${disabled ? 'disabled' : ''}" ${disabled ? 'onclick="return false"' : ''}>
@@ -1523,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function iPrint() {
   const conTabs = document.getElementById('print-con-tabs');
   if (!conTabs) return;
-  conTabs.innerHTML = orderedConsoles().map(c =>
+  conTabs.innerHTML = Object.keys(window.GDB).map(c =>
     `<div class="ctab ${c === pCon ? 'on' : ''}" onclick="setPCon('${c}')">${c}</div>`).join('');
   renderPrintOptions();
 }
