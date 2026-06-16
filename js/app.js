@@ -70,6 +70,15 @@ const DEFAULT_GUIDES = [
 ];
 
 const GENRE_LIST = ['Aventura', 'Acción', 'Terror', 'Deportes', 'Multijugador', 'RPG'];
+const CONSOLE_ORDER = ['PS4', 'PS5', 'PS3', 'Switch', 'PSP', 'PSVita', 'PS2', 'Xbox360', 'Wii'];
+function orderedConsoles() {
+  const keys = orderedConsoles();
+  return [
+    ...CONSOLE_ORDER.filter(c => keys.includes(c)),
+    ...keys.filter(c => !CONSOLE_ORDER.includes(c))
+  ];
+}
+
 const WHATSAPP_NUMBERS = {
   principal: '59160110595',
   papa: '59170000001'
@@ -109,6 +118,7 @@ function hideLoader() {
    FIREBASE — GUARDAR (todas las colecciones)
 ──────────────────────────────────────────── */
 async function saveAll() {
+  invalidateCache(); // próxima página recargará datos frescos
   // Guarda en paralelo todos los datos
   const saves = [
     fbSave('catalogo', window.GDB),
@@ -138,87 +148,137 @@ function save() { saveAll(); }
 /* ────────────────────────────────────────────
    ARRANQUE — carga Firebase y escucha cambios
 ──────────────────────────────────────────── */
+/* ────────────────────────────────────────────
+   CACHÉ en sessionStorage — clave compartida entre páginas
+──────────────────────────────────────────── */
+const CACHE_KEY = 'eg_cache_v1';
+const CACHE_TTL = 60 * 1000; // 60 segundos máximo antes de refrescar
+
+function readCache() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null; // expirado
+    return data;
+  } catch { return null; }
+}
+
+function writeCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch { /* sin espacio — ignorar */ }
+}
+
+function invalidateCache() {
+  sessionStorage.removeItem(CACHE_KEY);
+}
+
+// Llama invalidateCache() cuando se guarda algo
+const _originalSaveAll = saveAll;
+
 async function init() {
+  const cached = readCache();
+
+  if (cached) {
+    // ── MODO RÁPIDO: datos desde caché, sin loader ──
+    applyData(cached);
+    hideLoader();
+    initPage();
+    if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
+    // Refresca Firebase en segundo plano silenciosamente
+    refreshFromFirebase();
+    return;
+  }
+
+  // ── PRIMERA CARGA: muestra loader, carga Firebase ──
   showLoader('Conectando con la nube...');
-
-  // ── Catálogo ──
-  const catData = await fbLoad('catalogo', window.GDB_DEFAULT);
-  if (catData) window.GDB = catData;
-
-  // ── Imágenes ──
-  const imgData = await fbLoad('imagenes', {});
-  if (imgData) GIMGS = imgData;
-
-  // ── Artículos ──
-  const artData = await fbLoad('articulos', { items: [] });
-  if (artData?.items) ARTS = artData.items;
-
-  // ── Físicos ──
-  const fisData = await fbLoad('fisicos', { items: [] });
-  if (fisData?.items) FISI = fisData.items;
-
-  // ── Reparaciones ──
-  const repData = await fbLoad('reparaciones', { items: DEFAULT_REPS });
-  if (repData?.items) REPS = repData.items;
-
-  // ── Guías ──
-  const guiData = await fbLoad('guias', { items: DEFAULT_GUIDES });
-  if (guiData?.items) GUIDES = guiData.items;
-
-  // ── Géneros ──
-  const genData = await fbLoad('genres', typeof GENRES_DEFAULT !== 'undefined' ? GENRES_DEFAULT : {});
-  if (genData) GENRES = genData;
-
-  // ── Admins ──
-  const admData = await fbLoad('admins', { items: [{ user: 'admin', pass: sh('admin123'), display: 'Administrador Principal' }] });
-  if (admData?.items) ADMINS = admData.items;
-
-  // ── Ingresos ──
-  const ingData = await fbLoad('ingresos', { items: [] });
-  if (ingData?.items) INGRESOS = ingData.items;
-
+  await loadFromFirebase();
   hideLoader();
 
-  // ── Escucha cambios en tiempo real ──
+  if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
+  initPage();
+  startListeners();
+}
+
+// ── Carga todos los datos desde Firebase y guarda en caché ──
+async function loadFromFirebase() {
+  const [catData, imgData, artData, fisData, repData, guiData, genData, admData, ingData] =
+    await Promise.all([
+      fbLoad('catalogo', window.GDB_DEFAULT),
+      fbLoad('imagenes', {}),
+      fbLoad('articulos', { items: [] }),
+      fbLoad('fisicos', { items: [] }),
+      fbLoad('reparaciones', { items: DEFAULT_REPS }),
+      fbLoad('guias', { items: DEFAULT_GUIDES }),
+      fbLoad('genres', {}),
+      fbLoad('admins', { items: [{ user: 'admin', pass: sh('admin123'), display: 'Administrador Principal' }] }),
+      fbLoad('ingresos', { items: [] }),
+    ]);
+
+  applyData({ catData, imgData, artData, fisData, repData, guiData, genData, admData, ingData });
+  writeCache({ catData, imgData, artData, fisData, repData, guiData, genData, admData, ingData });
+}
+
+// ── Aplica datos al estado global ──
+function applyData({ catData, imgData, artData, fisData, repData, guiData, genData, admData, ingData }) {
+  if (catData) window.GDB = catData;
+  if (imgData) GIMGS = imgData;
+  if (artData?.items) ARTS = artData.items;
+  if (fisData?.items) FISI = fisData.items;
+  if (repData?.items) REPS = repData.items;
+  if (guiData?.items) GUIDES = guiData.items;
+  if (genData) GENRES = genData;
+  if (admData?.items) ADMINS = admData.items;
+  if (ingData?.items) INGRESOS = ingData.items;
+}
+
+// ── Refresca en segundo plano sin mostrar loader ──
+async function refreshFromFirebase() {
+  try {
+    await loadFromFirebase();
+    // Refresca la UI silenciosamente si algo cambió
+    if (document.getElementById('ctabs')) { iCat(); renderDashboard(); }
+    if (document.getElementById('client-console-grid')) renderClientConsoles();
+    if (document.getElementById('client-ggrid')) renderClientGames();
+    if (document.getElementById('agrid')) { rACats(); rA(); }
+    if (document.getElementById('fgrid')) rF();
+    if (document.getElementById('rgrid')) { rRFil(); rR(); }
+    if (document.getElementById('flasgrid')) rFlash();
+    if (document.getElementById('ing-list')) rIngresos();
+  } catch { /* silencioso */ }
+}
+
+// ── Listeners en tiempo real (solo para sync entre dispositivos) ──
+function startListeners() {
   fbListen('catalogo', (data) => {
     window.GDB = data;
+    invalidateCache(); // fuerza recarga en próxima página
     if (document.getElementById('ctabs')) { iCat(); renderDashboard(); }
     if (document.getElementById('client-console-grid')) renderClientConsoles();
     if (document.getElementById('client-ggrid')) renderClientGames();
   });
-
   fbListen('imagenes', (data) => {
     GIMGS = data;
     if (document.getElementById('ggrid')) rG();
     if (document.getElementById('client-ggrid')) renderClientGames();
   });
-
   fbListen('articulos', (data) => {
     if (data?.items) { ARTS = data.items; if (document.getElementById('agrid')) rA(); }
   });
-
   fbListen('fisicos', (data) => {
     if (data?.items) { FISI = data.items; if (document.getElementById('fgrid')) rF(); }
   });
-
   fbListen('reparaciones', (data) => {
     if (data?.items) { REPS = data.items; if (document.getElementById('rgrid')) { rRFil(); rR(); } }
   });
-
   fbListen('guias', (data) => {
     if (data?.items) { GUIDES = data.items; if (document.getElementById('flasgrid')) rFlash(); }
   });
-
   fbListen('genres', (data) => {
     GENRES = data;
     if (document.getElementById('client-ggrid')) renderClientGames();
   });
-
-  // ── Inicializa la sesión ──
-  if (role === 'admin') applyAdminUI(sessionStorage.getItem('eg_admin_name') || 'Administrador');
-
-  // ── Inicializa la página actual ──
-  initPage();
 }
 
 function initPage() {
@@ -424,7 +484,7 @@ function getGenre(name) { return GENRES[name] || 'Sin clasificar'; }
 function iCat() {
   const tabs = document.getElementById('ctabs');
   if (!tabs) return;
-  tabs.innerHTML = Object.keys(window.GDB).map(c => {
+  tabs.innerHTML = orderedConsoles().map(c => {
     const n = Object.values(window.GDB[c] || {}).flat().length;
     return `<div class="ctab ${c === aCon ? 'on' : ''}" onclick="setCon('${c}')">
       <i class="${cIco(c)}"></i> ${c}${n ? `<span class="cn">${n}</span>` : ''}
@@ -1375,7 +1435,7 @@ function sendCartToWhatsApp(target = 'principal') {
 function renderClientConsoles() {
   const grid = document.getElementById('client-console-grid');
   if (!grid) return;
-  grid.innerHTML = Object.keys(window.GDB).map(c => {
+  grid.innerHTML = orderedConsoles().map(c => {
     const n = Object.values(window.GDB[c] || {}).flat().length;
     const disabled = n === 0;
     return `<a href="cliente-catalogo.html?con=${c}" class="ccon-card ${disabled ? 'disabled' : ''}" ${disabled ? 'onclick="return false"' : ''}>
@@ -1463,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function iPrint() {
   const conTabs = document.getElementById('print-con-tabs');
   if (!conTabs) return;
-  conTabs.innerHTML = Object.keys(window.GDB).map(c =>
+  conTabs.innerHTML = orderedConsoles().map(c =>
     `<div class="ctab ${c === pCon ? 'on' : ''}" onclick="setPCon('${c}')">${c}</div>`).join('');
   renderPrintOptions();
 }
